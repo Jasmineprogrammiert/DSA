@@ -4,6 +4,7 @@
 # Anti-clockwise rotation: the last column becomes the first row, the 2nd column becomes the second-last row etc.
     # 1. transpose; 2. reverse the row order of the transposed matrix
 # ...
+# n: size of the matrix
 # T: O(n^2)
 # S: O(1)
 
