@@ -1,3 +1,12 @@
+# --- Grid Initialization Tips ---
+# Empty grid:  grid = [[0] * num_cols for _ in range(num_rows)]
+# Copy a grid: grid = [row.copy() for row in grid]
+#
+# WARNING: Do NOT use [[0] * num_cols] * num_rows
+#   This creates one inner list and repeats references to it.
+#   All rows point to the same list — modifying one row modifies all.
+#   e.g. grid = [[0]*3]*2; grid[0][0] = 1 → [[1,0,0],[1,0,0]]
+
 # Problem: 
     # given the rule and location of either King, Knight and Queen, 
     # return a list of all the unoccupied cells that can be reached in one move

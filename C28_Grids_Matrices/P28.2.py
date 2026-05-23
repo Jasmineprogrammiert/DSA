@@ -1,3 +1,14 @@
+# --- Queen's Reach Analysis ---
+# How many cells can a queen reach?
+#   Up: r | Down: n-r-1 | Left: c | Right: n-c-1
+#   Up-Left: min(r, c) | Up-Right: min(r, n-c-1)
+#   Down-Left: min(n-r-1, c) | Down-Right: min(n-r-1, n-c-1)
+#   Sum = 2*(n-1) + 4 diagonal mins
+#   Max reach per queen (near center): ~4*(n-1) cells
+#
+# Naive upper bound: O(n²) queens * 4*(n-1) cells each = O(n³)
+# Actual upper bound: each cell reached by at most 8 queens, O(n²) cells = O(n²)
+
 # 1. Create an empty board of the same size as the original board
 # 2. Find out queen's location(s)
 # 3. For each queen:

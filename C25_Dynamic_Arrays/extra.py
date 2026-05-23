@@ -1,3 +1,14 @@
+# --- Why append's amortized time is O(1) ---
+# If you do n appends total, and the total work done by all the resize
+# operations combined is O(n), the average work per append operation is:
+#   Total work = O(n) / n = O(1)
+# Even though individual appends might take O(n) time when resizing happens,
+# the average time per append across many operations is still constant.
+#
+# --- Why the overall space complexity is O(n) ---
+# You use at most 2n space total (n for actual elements, n for unused slots).
+# Since 2n is still O(n), the space complexity is O(n).
+
 def pop(self, i): 
     if i < 0 or i >= self._size:
         raise IndexError('Index out of bounds!')
