@@ -1,7 +1,36 @@
-# Problem 37.4 - Top Songs Class With Updates
-# Same as 37.3 but register_plays can be called with the same title multiple
-# times; new plays are added to the total.
-#
+# Goal: track top-k by cumulative plays, registers can update an existing song
+#   dict of running totals, rank only on read
+#   -> register O(1), top_k O(n log k) via nlargest
+
+# n: songs registered so far
+# k: number requested (k << n)
+# register_plays T: O(1) - one dict get + assignment
+# top_k T: O(n log k) - nlargest scans all n totals, keeping a size-k heap
+# S: O(n) - dict of totals; top_k heap/output is O(k)
+
+import heapq
+
+
+class TopSongs:
+    def __init__(self, k):
+        self.k = k
+        self.plays = {}
+
+    def register_plays(self, title, plays):
+        self.plays[title] = self.plays.get(title, 0) + plays
+
+    def top_k(self):
+        # heapq.nlargest(n, iterable, key=None)
+        return heapq.nlargest(self.k, self.plays, key=self.plays.get)
+
+
+# # Top Songs Class With Updates
+
+# Implement a `TopSongs` class that receives an integer `k > 0` during initialization and has two methods:
+
+# - `register_plays(title, plays)` indicates that a song was played a given number of times. It returns nothing. If the song was already registered, the new plays should be **added** to the total number of plays for that song.
+# - `top_k()` returns the (up to) `k` registered song titles with the most plays, in any order, and breaking ties arbitrarily.
+
 # Example:
 # s = TopSongs(3)
 # s.register_plays("Boolean Rhapsody", 100)
@@ -14,9 +43,13 @@
 # s.register_plays("Here Comes The Bug", 223)
 # s.register_plays("Oops! I Broke Prod Again", 274)
 # s.register_plays("All the Single Brackets", 132)
-# s.top_k()  # ["All About That Base Case","Boolean Rhapsody","Oops!..."]
-#
+# s.top_k()  # Returns ["All About That Base Case", "Boolean Rhapsody", "Oops! I Broke Prod Again"]
+
+# Analyze the space and runtime of each operation in terms of the number of songs registered so far. The goal is to minimize the total runtime assuming we will make the same number of operations of each type and that `k` will be relatively small compared to the number of songs.
+
 # Constraints:
-# - 0 < k < 1000
-# - Song titles unique, length <= 50
-# - Each register call plays >= 1, total never exceeds 10^9
+
+# - `0 < k < 1000`
+# - Song titles are unique and have at most `50` characters.
+# - Each time a song is registered, the number of plays is at least `1`.
+# - The total number of plays for a song never exceeds `10^9`.
