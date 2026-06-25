@@ -50,11 +50,6 @@ class DynamicArray:
 # S: O(n) extra space
 
 
-
-# Your previous Plain Text content is preserved below:
-
-# Hello! Your interview question is below. Write code in this pad just like you would normally – your AI Interviewer will be able to see it.
-
 # # Implement Dynamic Array
 
 # Assume your programming language only supports fixed-size arrays. Implement a dynamic array data structure that supports the following:
