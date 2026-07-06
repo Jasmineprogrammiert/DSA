@@ -61,6 +61,57 @@ def min_subarray_sum_split(arr, k):
 # print(min_subarray_sum_split([10, 5, 8, 9, 11], 3))
 
 
+# ---------- Dynamic Programming ---------
+# 1. State: rec(i, x) = min largest-piece-sum when splitting arr[i:] into x subarrays (x = pieces still owed)
+# 2. Base:  x == 1 -> one piece = sum(arr[i:]); x == n - i -> each element alone = max(arr[i:])
+# 3. Choice: try each first-cut p; score = max(first piece, rest); answer = min over all cuts
+
+# Recursion tree for arr = [10, 5, 8, 9, 11], k = 3 (each node loops over its own cut points p):
+# rec(0,3) [10,5,8,9,11]                                        -> min(20,17,23) = 17
+# |
+# |- p=0 first=[10]    -> max(10, rec(1,2)) = 20
+# |   `- rec(1,2) [5,8,9,11]                                    -> min(28,20,22) = 20
+# |       |- p=1 first=[5]     -> max(5,  rec(2,1)=sum[8,9,11]=28) = 28
+# |       |- p=2 first=[5,8]   -> max(13, rec(3,1)=sum[9,11]=20)   = 20
+# |       `- p=3 first=[5,8,9] -> max(22, rec(4,1)=sum[11]=11)     = 22
+# |
+# |- p=1 first=[10,5]  -> max(15, rec(2,2)) = 17   <- best
+# |   `- rec(2,2) [8,9,11]                                      -> min(20,17) = 17
+# |       |- p=2 first=[8]   -> max(8,  rec(3,1)=20) = 20
+# |       `- p=3 first=[8,9] -> max(17, rec(4,1)=11) = 17
+# |
+# `- p=2 first=[10,5,8] -> max(23, rec(3,2)) = 23
+#     `- rec(3,2) [9,11]  x == n-i -> max[9,11] = 11 (base case: each element alone)
+
+# n: length of the array
+# k: number of subarrays
+# Subproblems: O(n * k) — one per (i, x) state
+# Work per subproblem: O(n) — the inner loop scans up to n cut points
+# T: O(n^2 * k) — n * k states, each doing O(n) work
+# S: O(n * k) — memo holds one entry per (i, x) state
+
+def min_split(arr, k):
+    n = len(arr)
+    memo = {}
+    def min_split_rec(i, x):
+        if (i, x) in memo:
+            return memo[(i, x)]
+        # Base cases
+        if x == n - i: # x subarrays for x remaining elements -> each element is its own subarray
+            memo[(i, x)] = max(arr[i:])
+        elif x == 1: # One subarray left -> it must hold everything remaining
+            memo[(i, x)] = sum(arr[i:])
+        else: # general case
+            cur_sum = 0
+            res = float('inf')
+            for p in range(i, n - (x - 1)):
+                cur_sum += arr[p]
+                # max: largest piece of this cut; min: best (smallest) largest-piece across all cuts
+                res = min(res, max(cur_sum, min_split_rec(p+1, x-1)))
+            memo[(i, x)] = res
+        return memo[(i, x)]
+    return min_split_rec(0, k)
+
 
 # # Min Subarray Sum Split
 
