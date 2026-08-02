@@ -1,3 +1,17 @@
+# node = player, edge = same row/col with nobody between
+#     sort each row by col, join CONSECUTIVE (mirror for cols) -> m = O(n)
+# a component never empties; BFS + delete furthest-first takes it to 1
+# -> answer = number of connected components
+#
+# for node in graph:
+#     if node not in visited: count += 1; BFS(node, visited)
+
+# n: players
+# T: O(n log n) — sorting each row/col group to find consecutive players;
+#    the traversal itself is O(n + m) with m = O(n)
+# S: O(n) — adjacency plus visited
+
+
 # # Multiplayer Video Game
 
 # A group of `n` friends is playing a videogame with the following rules:

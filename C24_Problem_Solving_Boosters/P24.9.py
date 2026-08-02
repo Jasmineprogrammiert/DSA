@@ -1,3 +1,15 @@
+# sort by date -> "earlier" is free, only ads left to compare
+# exactly one above me == hi > ads[i] > hi2
+#
+# for i sorted by date:
+#     if hi > ads[i] > hi2: keep i
+#     fold ads[i] into hi / hi2      <- test BEFORE folding
+
+# n: number of launches
+# T: O(n log n) — the sort dominates, the sweep itself is O(n)
+# S: O(n) — the sorted index order
+
+
 # # Company Launches
 
 # A VC firm is analyzing `n` companies that launched in 1992. We are given two arrays of length `n`, `launches` and `ads`. The `i`-th company launched on day `launches[i]` (which is a number between 1 and 366) and had an ad spending of `ads[i]` (in dollars). We say a launch overshadows another launch if:

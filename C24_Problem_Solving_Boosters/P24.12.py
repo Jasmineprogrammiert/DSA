@@ -1,3 +1,16 @@
+# the path can turn at ANY node, not just the root
+#
+# down(None)  = -1,  down(x) = 1 + max(down(l), down(r))
+# through(x)  = down(l) + down(r) + 2
+# diameter(x) = max(through(x), diameter(l), diameter(r))
+#
+# precompute down in ONE post-order pass
+
+# n: nodes
+# T: O(n) — down precomputed once, then O(1) per node
+# S: O(n) — the down table; call stack is O(h), O(n) when skewed
+
+
 # # Tree Diameter
 
 # Given the root `root` of a binary tree, find the diameter of the tree. The diameter is the maximum distance between any two nodes.

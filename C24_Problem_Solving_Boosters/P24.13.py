@@ -1,3 +1,16 @@
+# root anywhere: for c in adj[x]: if c != parent: visit(c, x)
+#     in a tree the parent guard replaces `visited`
+#
+# best1, best2 = two largest down(c), missing = -1
+# down(x) = best1 + 1,  through(x) = best1 + best2 + 2
+#
+# alt: BFS from anywhere -> furthest u; BFS from u -> that dist
+
+# n: nodes
+# T: O(n) — one pass to root it, one to compute down
+# S: O(n) — adjacency plus the down table
+
+
 # # Unrooted Tree Diameter
 
 # Given the number of nodes `n > 0` and the edge list `edges` of an undirected graph that forms a tree (meaning it is connected and has no cycles), find the tree's diameter. The diameter is the maximum distance between any two nodes.

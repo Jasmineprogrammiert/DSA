@@ -1,3 +1,15 @@
+# half-open [s,e). xor is symmetric -> swap so a_s <= b_s, halves the cases
+#
+# a_e <  b_s  ->  [a, b]
+# a_e == b_s  ->  [[a_s, b_e]]
+# else        ->  [a_s, b_s]                    if a_s < b_s
+#                 [min(a_e,b_e), max(a_e,b_e)]  if a_e != b_e
+
+# n: 4 endpoints
+# T: O(1) — the answer only depends on the four endpoints
+# S: O(1) — at most two intervals out
+
+
 # # Interval XOR
 
 # Given two intervals, `a = [a_s, a_e]` and `b = [b_s, b_e]` with `a_s < a_e` and `b_s < b_e`, return a list of intervals representing `a xor b`, defined as the sections of `a` that are not in `b` and the sections of `b` that are not in `a`. The output intervals should be sorted from left to right, non-overlapping, and not sharing an endpoint.
