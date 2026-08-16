@@ -1,0 +1,79 @@
+#!/bin/zsh
+#
+# timer — live countdown, optional count-up past the end
+#
+#   timer         30 minutes (default)
+#   timer 25      25 minutes
+#   timer 20      20 minutes
+#
+# The four phases scale to whatever total you give, keeping the same
+# proportions as the 30-minute plan: 0-8 / 8-12 / 12-25 / 25-30.
+# Nothing beeps at zero: the terminal is the only output. Ctrl+C stops.
+#
+# At zero it asks whether to keep counting. Answering y turns the
+# countdown into a count-up: the clock restarts at 00:00 and climbs,
+# and the bar refills once per full interval (20 -> 20+1, 20+2, ...).
+
+emulate -L zsh
+setopt no_notify no_monitor
+
+arg=${1:-30}
+case $arg in
+  <->m|<->) total=$(( ${arg%m} * 60 )) ;;
+  *)        print -u2 "usage: timer [minutes]"; exit 1 ;;
+esac
+(( total > 0 )) || { print -u2 "timer: duration must be positive"; exit 1 }
+
+width=24
+start=$(date +%s)
+end=$(( start + total ))
+
+cleanup() { tput cnorm; print ""; exit 130 }
+trap cleanup INT TERM
+
+clock() { printf '%02d:%02d' $(( $1 / 60 )) $(( $1 % 60 )) }
+
+bar() {
+  local cells=$1
+  printf '\r  [%s%s]  %s  ' \
+    "${(l:$cells::#:):-}" "${(l:$(( width - cells ))::.:):-}" "$(clock $2)"
+}
+
+draw() {
+  local left=$1
+  bar $(( (total - left) * width / total )) $left
+}
+
+draw_up() {
+  local over=$1
+  bar $(( (over % total) * width / total )) $over
+}
+
+tput civis
+while :; do
+  left=$(( end - $(date +%s) ))
+  (( left <= 0 )) && break
+  draw $left
+  sleep 1
+done
+
+draw 0
+tput cnorm
+print " <- TIME"
+
+# Keep going?  y counts up from here, anything else quits.
+while :; do
+  print -n "  keep counting? [y/n] "
+  read -r reply || { print ""; exit 0 }
+  case ${(L)reply} in
+    y|yes) break ;;
+    n|no|'') print ""; exit 0 ;;
+  esac
+done
+
+up_start=$(date +%s)
+tput civis
+while :; do
+  draw_up $(( $(date +%s) - up_start ))
+  sleep 1
+done
