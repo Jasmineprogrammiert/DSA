@@ -1,3 +1,7 @@
+# n: length of string
+# T: O(n) since each character is visited once
+# S: O(n) because in the worst case, all the chars in the input string are stored in output. In the best case, the total number stored is still at most n
+
 def split(s, c):
     if not s:
         return []
@@ -13,11 +17,6 @@ def split(s, c):
             curr = []
     res.append(''.join(curr))
     return res
-
-# n: the length of the input string
-# T: O(n) since each character is visited once
-# S: O(n) because in the worst case, all the chars in the input string are stored in output. In the best case, the total number stored is still at most n
-
 
 
 # # String Split

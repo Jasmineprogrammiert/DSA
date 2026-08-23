@@ -1,14 +1,7 @@
-# def index_of(s, t):
-#     if not t:
-#         return 0
-#     if not s:
-#         return -1
+# n, m: the lengths of s and t
+# T: O(n * m) — n - m + 1 window starts, up to m character comparisons each
+# S: O(1) — compares in place; slicing s[i:i+m] instead would cost O(m)
 
-#     for i in range(len(s) - len(t) + 1):
-#         if s[i : i + len(t)] == t:
-#             return i
-#     return -1
-  
 def index_of(s, t):
     if not t:
         return 0
@@ -22,13 +15,6 @@ def index_of(s, t):
         else:
             return i
     return -1
-
-# T: O(len(s) * len(t))
-    # The outer loop runs O(len(s)) times, and the inner loop runs O(len(t)) times in the worst case
-# S: O(1)
-    # comparing characters like s[i + j] != t[j] access existing strings without creating any new data structures or storing additional information
-    # The variables i and j are just loop counters that take constant space regardless of input size.
-
 
 
 # # String Matching

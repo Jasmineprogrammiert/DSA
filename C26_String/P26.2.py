@@ -1,39 +1,20 @@
-# def join(arr, s):
-#     string = ""
-    
-#     if not arr:
-#         return string
-
-#     for ele in arr:
-#         if ele == arr[-1]:
-#             string += ele
-#         else:
-#             string += ele + s
-
-#     return string
+# k: total characters in the output = sum of the string lengths + (len(arr) - 1) * len(s)
+# T: O(len(arr) + k) — one pass over the pieces, one join over k characters
+# S: O(k) — the output buffer
 
 def join(arr, s):
     res = []
 
     for i in range(len(arr)):
         res.append(arr[i])
-        
         if i != len(arr) - 1:
             res.append(s)
 
     return array_to_string(res)
 
 def array_to_string(arr):
-  # Function allowed by the problem statement.
+  # Function allowed by the problem statement
   return ''.join(arr)
-
-# k: the total number of characters in the final output
-    # k = the total length of all string + the number of strings in the array * the length of the seperator
-# T: O(k)
-    # T of the loop + array_to_string = O(len(arr)) + O(k) = O(len(arr) + k) = O(k)
-    # Since k typically dominates len(arr)
-# S: O(k)
-
 
 
 # # String Join
