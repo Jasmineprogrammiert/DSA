@@ -20,7 +20,8 @@ def pop(self, i):
     self._size -= 1
 
     return remove_ele
-  
+
+
 # # Extra Dynamic Array Operations
 
 # In this problem, we are building off of an existing dynamic array data structure, which already has `append`, `pop_back`, `set`, `get`, and `size` methods, and adding additional methods. Please refer to the [Implement Dynamic Array](https://bctci.co/implement-dynamic-array) problem first.

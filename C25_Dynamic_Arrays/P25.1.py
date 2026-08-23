@@ -1,53 +1,54 @@
+# Grow:   _size == capacity      -> resize(capacity * 2)
+# Shrink: _size * 4 <= capacity  -> resize(capacity // 2), and only if capacity > DEFAULT
+
+# n: length of arr
+# T: O(n) for all methods except append and pop_back, which has an amortized time of O(1)
+# S: O(n) extra space
+
 class DynamicArray:
     def __init__(self):
         self._size = 0
         self.capacity = 10
         self.arr = [None] * self.capacity
 
-    def append(self, x):
-        if self._size == self.capacity:
-            self.resize(self.capacity * 2)
-            
-        self.arr[self._size] = x
-        self._size += 1
-    
     def get(self, i):
-        if i <= self._size - 1 and i >= 0: 
-            return self.arr[i]
-        raise IndexError('Index out of bounds')
-    
+        if i < 0 or i >= self._size:
+            raise IndexError('Index out of bounds')
+        return self.arr[i]
+
     def set(self, i, x):
-        if i >= self._size or i < 0: 
+        if i < 0 or i >= self._size:
             raise IndexError('Index out of bounds')
         self.arr[i] = x
-    
+
     def size(self):
         return self._size
 
+    def append(self, x):
+        if self._size == self.capacity:
+            self.resize(self.capacity * 2)
+
+        self.arr[self._size] = x
+        self._size += 1
+
     def pop_back(self):
-        if self._size == 0: 
+        if self._size == 0:
             raise IndexError('Pop from empty array')
 
         self._size -= 1
+        self.arr[self._size] = None
 
-        if self._size <= self.capacity * 0.25 and self.capacity > 10:
+        if self._size * 4 <= self.capacity and self.capacity > 10:
             self.resize(self.capacity // 2)
 
     def resize(self, capacity):
         new_arr = [None] * capacity
 
-        i = 0
-        while i < self._size:
+        for i in range(self._size):
             new_arr[i] = self.arr[i]
-            i += 1
-        
+
         self.arr = new_arr
         self.capacity = capacity
-
-# Algo: dynamic arrays
-# n: the length of arr
-# T: O(n) for all methods except append and pop_back, which has an amortized time of O(1)
-# S: O(n) extra space
 
 
 # # Implement Dynamic Array
