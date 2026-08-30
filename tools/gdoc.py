@@ -15,7 +15,10 @@ Sheets live in tools/gsheet.py and share this file's auth, so the scope below
 covers both APIs; re-run `auth` after changing it.
 
 Credentials live in ~/.config/gdoc/credentials.json (mode 600), outside the
-repo. The refresh token does not expire while the OAuth app stays published
+repo -- client id, client secret and refresh token alike, so nothing
+identifying is committed. `auth` takes the first two from GOOGLE_CLIENT_ID /
+GOOGLE_CLIENT_SECRET, or from a previous auth, or prompts for them. The
+refresh token does not expire while the OAuth app stays published
 "In production".
 """
 
@@ -31,7 +34,6 @@ import urllib.request
 import webbrowser
 from getpass import getpass
 
-CLIENT_ID = "491783709548-pp23shr07nv1ujc16v0723ki8ovv0c43.apps.googleusercontent.com"
 SCOPE = "https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/spreadsheets"
 AUTH_URI = "https://accounts.google.com/o/oauth2/v2/auth"
 TOKEN_URI = "https://oauth2.googleapis.com/token"
@@ -82,17 +84,27 @@ class Catcher(http.server.BaseHTTPRequestHandler):
         pass
 
 
-def stored_secret():
-    """Reuse the secret from a previous auth, so re-consent needs no TTY."""
+def stored(key):
+    """Reuse a value from a previous auth, so re-consent needs no TTY."""
     try:
         with open(CRED_PATH) as f:
-            return json.load(f).get("client_secret", "")
+            return json.load(f).get(key, "")
     except (OSError, ValueError):
         return ""
 
 
 def cmd_auth():
-    secret = os.environ.get("GOOGLE_CLIENT_SECRET") or stored_secret()
+    client_id = os.environ.get("GOOGLE_CLIENT_ID") or stored("client_id")
+    if client_id:
+        print("Reusing the client id already in %s" % CRED_PATH)
+    else:
+        client_id = input(
+            "Paste the OAuth client id (ends .apps.googleusercontent.com): "
+        ).strip()
+    if not client_id:
+        sys.exit("No client id given.")
+
+    secret = os.environ.get("GOOGLE_CLIENT_SECRET") or stored("client_secret")
     if secret:
         print("Reusing the client secret already in %s" % CRED_PATH)
     else:
@@ -108,7 +120,7 @@ def cmd_auth():
 
     url = AUTH_URI + "?" + urllib.parse.urlencode(
         {
-            "client_id": CLIENT_ID,
+            "client_id": client_id,
             "redirect_uri": redirect_uri,
             "response_type": "code",
             "scope": SCOPE,
@@ -138,7 +150,7 @@ def cmd_auth():
         TOKEN_URI,
         {
             "code": code,
-            "client_id": CLIENT_ID,
+            "client_id": client_id,
             "client_secret": secret,
             "redirect_uri": redirect_uri,
             "grant_type": "authorization_code",
@@ -151,7 +163,7 @@ def cmd_auth():
     with open(CRED_PATH, "w") as f:
         json.dump(
             {
-                "client_id": CLIENT_ID,
+                "client_id": client_id,
                 "client_secret": secret,
                 "refresh_token": tok["refresh_token"],
             },

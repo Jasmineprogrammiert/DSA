@@ -29,7 +29,7 @@ import sys
 import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import gdoc  # noqa: E402  - shares CLIENT_ID, token refresh, and api()
+import gdoc  # noqa: E402  - shares credentials, token refresh, and api()
 
 SHEETS_API = "https://sheets.googleapis.com/v4/spreadsheets"
 
