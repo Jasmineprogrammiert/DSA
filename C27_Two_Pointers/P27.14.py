@@ -1,51 +1,33 @@
-# use paraller pointers, a seeker and writter, to modify the arr in place
-# use seeker to find unique element, writer represents to-be-written element
-# seeker, writer = 0, 0
-# while seeker < len(arr)
-    # if seeker == 0
-        # move both pointers forward by 1
-    
-    # compare the value of arr[s] and arr[s - 1] (to see if arr[s] is a duplicate)
-    # if arr[s] == arr[s-1]
-        # move seeker forward by 1 
-    # else 
-        # arr[w] = arr[s], move both pointers forward by 1
-# return the value of writer (the index writer is at), which represents the number of unique value
-
-# IMPROVED
-# seeker, writer = 1, 1
-# if not arry, return 0
-# while seeker < len(arr)
-    # if arr[s] != arr[s-1]
-        # arr[w] = arr[s]
-        # writer += 1
-    # seeker += 1
-# return ...
-    
-# ALTERNATIVE
-# seeker, writer = 0, 0
-# while seeker < len(arr)
-    # if seeker == 0 or if arr[s] != arr[s-1]
-        # arr[w] = arr[s]
-        # writer += 1
-# seeker += 1
-# return ...
+# if not arr, return 0
+# s = w = 1
+# while s < len(arr)
+# arr[s] != arr[s - 1]
+#       arr[w] = arr[s], s += 1, w += 1
+# else 
+#       s += 1
+# return w
 
 # n: length of arr
-# T: O(n) - seeker will check all elements in the array once, pointer is always smaller (slower) than seeker
-# O: O(1) - no new array is created
+# T: O(n) - the seeker makes one left-to-right pass; the writer never overtakes it
+# S: O(1) - two indices, no second array
 
-def in_place_duplicate_removal(arr):
-    if not arr: return 0
+# INDEX    0, 1, 2, 3, 4, 5, 6
+# ORG_ARR  1, 2, 2, 3, 3, 3, 5
+# ARR      1, 2, 3, 5, 3, 3, 5
+#                      w
+#                            s
 
-    s, w = 1, 1
+def duplicate_removal(arr):
+    if not arr:
+        return 0
+    
+    s = w = 1
     while s < len(arr):
         if arr[s] != arr[s - 1]:
             arr[w] = arr[s]
             w += 1
         s += 1
     return w
-
 
 
 # # In-Place Duplicate Removal

@@ -1,26 +1,29 @@
-# create two pointers moving inward
-# l moves from left to right, r moves from right to left
-# arr[l] is smaller than 0, arr[r] is larger or equal to 0. This limites the bound of l and r
-# when arr[l] adn arr[r] is larger than 0, arr[r] is too large, so move r one index to the left
-# when arr[l] adn arr[r] is smaller than 0, arr[l] is too large, so move l one index to the right
-# when their sum equal to 0, return True
+# sorted arr > inward pointers
+
+# n: length of array
+# T: O(n) - each element is visited once
+# S: O(1) - only using constant extra space for the two pointers
+
+# arr = [-3, 0, 0, 1, 2]
+# index   0   1  2  3  4
+#      arr[l]  arr[r]  total
+#       -3       2      -1
+#        0              2
+#                1      1
+#                0      0
 
 def two_sum(arr):
     l, r = 0, len(arr) - 1
     
     while l < r:
-        if arr[l] + arr[r] > 0:
-            r -= 1
-        elif arr[l] + arr[r] < 0:
-            l += 1
-        else:
+        total = arr[l] + arr[r]
+        if total == 0:
             return True
+        elif total > 0:
+            r -= 1
+        else:
+            l += 1
     return False
-    
-# n: sum of all array length
-# T: O(n) - each element is visited once
-# S: O(1) - only using constant extra space for the two pointers
-
 
 
 # # Two Sum

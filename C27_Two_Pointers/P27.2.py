@@ -1,79 +1,34 @@
+# 0  1  2  3     INDEX
+# 1  2  2  1     ARR
+#    p1
+#       p2
+# p1_sum = 3
+# p2_sum = 6
+
+# p1: next index to add to the slow sum
+# p2:                          fast
+#
+# n: length of arr
+# T: O(n) - each item is iterated once
+# S: O(1) - constant four variable integers regardless of the arr size
+
 def smaller_prefixes(arr):
-    max_k = len(arr) // 2
-
-    for k in range (1, max_k + 1):
-        sum_k = sum(arr[0:k])
-        sum_2k = sum(arr[0:2*k])
-
-        if sum_k > sum_2k:
-            return False
+    p1, p2 = 0, 0
+    p1_sum, p2_sum = 0, 0
     
+    while p1 < len(arr) // 2:
+        p1_sum += arr[p1]
+        p2_sum += arr[p2] + arr[p2 + 1]
+        
+        if p1_sum >= p2_sum:
+            return False
+        
+        p1 += 1
+        p2 += 2
+        
     return True
 
-# Algo: Brute force
-# n: length of the array
-# T: O(n^2)
-# S: O(n)
 
-# O(k): the time to sum up k elements for a particular k
-# When all numbers from k = 1 to n/2 are added up, you get:
-# O(1) + O(2) + O(3) + ... + O(n/2)
-# = 1 + 2 + 3 + ... + m
-    # 1 + 2 + 3 + ... + m = (1 + m) + (2 + (m-1)) + (3 + (m-2)) + ... 
-    # Each pair sums to (m+1), and you have m/2 such pairs, giving you m(m+1)/2.
-# = m*(m+1)/2
-# So, for m = n/2:
-# Sum = (n/2) * (n/2 + 1) / 2 ≈ n² / 8
-
-
-
-def smaller_prefixes(arr):
-    n = len(arr)
-    prefix = [0] * (n + 1) # sum of all length from 0 to n
-    max_k = n // 2
-    
-    for i in range(n):
-        prefix[i + 1] = prefix[i] + arr[i]
-
-    for k in range (1, max_k + 1):
-        sum_k = prefix[k]
-        sum_2k = prefix[2 * k]
-
-        if sum_k > sum_2k:
-            return False
-    
-    return True
-
-# Algo: Brute force (optimized)
-# n: length of the array
-# T: O(n)
-# S: O(n)
-
-
-
-def smaller_prefixes(arr):
-  sp, fp = 0, 0
-  slow_sum, fast_sum = 0, 0
-  
-  while fp < len(arr):
-    slow_sum += arr[sp]
-    fast_sum += arr[fp] + arr[fp + 1]
-                              
-    if slow_sum >= fast_sum:
-      return False
-    
-    sp += 1
-    fp += 2
-  
-  return True
-                                
-# Algo: Slow and fast pointers
-# n: length of the array
-# T: O(n) - both pointers traverse the array once, and each element is visited at most once by each pointer
-# S: O(1) - constant extra space for the two pointers and running sums
-    
-
-  
 # # Smaller Prefixes
 
 # Given an array of integers, `arr`, where the length, `n`, is even, return whether the following condition holds for every `k` in the range `1 ≤ k <= n/2`: "the sum of the first `k` elements is smaller than the sum of the first `2k` elements." If this condition is false for any `k` in the range, return `false`.

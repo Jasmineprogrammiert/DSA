@@ -1,55 +1,53 @@
-# use two inward pointers with a middle benchmark pointer
-# l(R), r(B), curr(W) = 0, len(arr) - 1, 0
-# while curr <= r
-# if arr[curr] == B
-    # arr[curr], arr[r] = arr[r], arr[curr]
-    # r -= 1
-# elif arr[curr] == R
-    # arr[l], arr[curr] = arr[curr], arr[l]
-    # l += 1
-    # curr += 1
-# else
-    # curr += 1
-# return arr
+# [0, l): R
+# [l, cur): W
+# [cur, r]: unsorted
+# (r, end]: B
 
-# n: arr length
-# T: O(n) - pointers check n elements in total
-# S: O(1) - no new array is created
+# RWB                         ORDER
+# 0  1  2  3  4  5  6         INDEX
+# R  W  B  B  W  R  W         INPUT
+# R  R  W  W  W  B  B         RES
+#       l
+#             r
+#             cur
+
+# n: length of arr
+# T: O(n) - iterate each element once
+# S: O(1) - modify the arr in place
 
 def dutch_flag_pro(arr):
-    l, r, curr = 0, len(arr) - 1, 0
+    l, cur, r = 0, 0, len(arr) - 1
     
-    while curr <= r:
-        if arr[curr] == 'B':
-            arr[curr], arr[r] = arr[r], arr[curr]
-            r -= 1
-        elif arr[curr] == 'R':
-            arr[l], arr[curr] = arr[curr], arr[l]
+    while cur <= r:
+        if arr[cur] == 'R':
+            arr[l], arr[cur] = arr[cur], arr[l]
             l += 1
-            curr += 1
+            cur += 1
+        elif arr[cur] == 'W':
+            cur += 1
         else:
-            curr += 1
-        
+            arr[cur], arr[r] = arr[r], arr[cur]
+            r -= 1
     return arr
+
 
 # Alternative: counting sort
 # count the occurence of R and W, then rewrtie the array with R, W and B
  
-# def sort_colors(arr):
-#     r_count = sum(1 for c in arr if c == 'R')
-#     w_count = sum(1 for c in arr if c == 'W')
+def sort_colors(arr):
+    r_count = sum(1 for c in arr if c == 'R')
+    w_count = sum(1 for c in arr if c == 'W')
     
-#     i = 0
-#     for _ in range(r_count):
-#         arr[i] = 'R'
-#         i += 1
-#     for _ in range(w_count):
-#         arr[i] = 'W'
-#         i += 1
-#     while i < len(arr):
-#         arr[i] = 'B'
-#         i += 1
-
+    i = 0
+    for _ in range(r_count):
+        arr[i] = 'R'
+        i += 1
+    for _ in range(w_count):
+        arr[i] = 'W'
+        i += 1
+    while i < len(arr):
+        arr[i] = 'B'
+        i += 1
 
 
 # # Dutch Flag Problem
