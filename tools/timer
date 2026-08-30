@@ -9,6 +9,10 @@
 # proportions as the 30-minute plan: 0-8 / 8-12 / 12-25 / 25-30.
 # Nothing beeps at zero: the terminal is the only output. Ctrl+C stops.
 #
+# Space or p holds the clock mid-run and the same key starts it again;
+# q leaves. A hold costs the clock nothing — the time you were away is
+# added back — so stepping out for water does not fake an overtime.
+#
 # At zero it rolls straight into a count-up on the same line, with no
 # break: the clock restarts at 00:00 and climbs, the bar refilling once
 # per full interval (20 -> 20+1, 20+2, ...). The bar snapping from full
@@ -29,7 +33,7 @@ width=24
 start=$(date +%s)
 end=$(( start + total ))
 
-cleanup() { tput cnorm; print ""; exit 130 }
+cleanup() { tput cnorm; print ""; exit ${1:-130} }
 trap cleanup INT TERM
 
 clock() { printf '%02d:%02d' $(( $1 / 60 )) $(( $1 % 60 )) }
@@ -50,16 +54,44 @@ draw_up() {
   bar $(( (over % total) * width / total )) $over
 }
 
+# Sit on the frozen bar until the key comes again, then push end forward
+# by however long that took, so the hold leaves the remaining time whole.
+hold() {
+  local at=$(date +%s) key
+  printf 'paused '
+  while :; do
+    read -s -k 1 key
+    case $key in
+      ' '|p|P) break ;;
+      q|Q)     cleanup 0 ;;
+    esac
+  done
+  end=$(( end + $(date +%s) - at ))
+  printf '\r%*s' $(( width + 22 )) ''
+}
+
+# A second of waiting that stays awake to the keyboard. Falls back to a
+# plain sleep when stdin is not a terminal, so a piped run still counts.
+wait_tick() {
+  local key
+  [[ -t 0 ]] || { sleep 1; return }
+  read -s -t 1 -k 1 key || return
+  case $key in
+    ' '|p|P) hold ;;
+    q|Q)     cleanup 0 ;;
+  esac
+}
+
 tput civis
 while :; do
   left=$(( end - $(date +%s) ))
   (( left <= 0 )) && break
   draw $left
-  sleep 1
+  wait_tick
 done
 
 # Past the mark, on the same line: the clock climbs instead of falling.
 while :; do
   draw_up $(( $(date +%s) - end ))
-  sleep 1
+  wait_tick
 done
