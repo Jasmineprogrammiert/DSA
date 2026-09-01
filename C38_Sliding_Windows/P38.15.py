@@ -1,59 +1,67 @@
-# def shortest_period(s1, s2):
-#     l, r = 0, 0
-#     shortest = float("inf")
-#     freq_map = letters still needed
-#     missing = distinct letters not yet covered
-#     while True:
-#         if missing > 0:  # invalid -> grow
-#             if r == len(s1):  # can't grow -> stop
-#                 break
-#             if s1[r] needed:
-#                 freq_map[s1[r]] -= 1  # one copy supplied
-#                 if freq_map[s1[r]] == 0:
-#                     missing -= 1  # letter now covered
-#             r += 1
-#         else:  # valid -> record, then shrink
-#             shortest = min(shortest, r - l)  # r exclusive -> window len
-#             if s1[l] needed:
-#                 freq_map[s1[l]] += 1  # give the copy back
-#                 if freq_map[s1[l]] == 1:
-#                     missing += 1  # letter now short again
-#             l += 1
-#     return shortest
+# w e l l                   S2
+# freq_map = {w: 1, e: 1, l: 2}
+# shortest = float('inf')
+
+# 0 1 2 3 4 5 6 7 8 9       INDEX
+# h e l l o w o r l d       S1
+#     l
+#                     r
+# --------------------------------------------
+# missing = len(freq_map)
+
+# while r < len(s1):
+# if letter in freq_map:
+#       freq_map[letter] -= 1
+#       if freq_map[letter] == 0:
+#           missing -= 1
+# r += 1
+
+# while missing == 0:
+#       shortest = min(shortest, r - l)
+#       if letter in freq_map:
+#           freq_map[letter] += 1
+#           if freq_map[letter] > 0:
+#               missing += 1
+#       l += 1
+
+# return shortest if shortest != float('inf'), else -1
+# --------------------------------------------
+# shortest = 5
+# missing = 1
+# freq_map = {w: 0, e: 1, l: -1}
 
 # n: length of s1
-# T: O(n) — l and r each only move forward, at most n steps total
-# S: O(1) — freq_map holds at most 26 distinct letters
+# m: length of s2
+# T: O(n) - each elem in s1 is visited at most twice; building the dict takes O(m), since m < n, O(2n + m) -> O(n)
+# S: O(m) - the dictionary holds at most m distinct characters
 
 from collections import defaultdict
 
-
 def shortest_period(s1, s2):
     l, r = 0, 0
-    shortest = float('inf')
     freq_map = defaultdict(int)
+    shortest = float('inf')
+
     for char in s2:
         freq_map[char] += 1
     missing = len(freq_map)
 
-    while True:
-        if missing > 0:
-            if r == len(s1):
-                break
-            char = s1[r]
-            if char in freq_map:
-                freq_map[char] -= 1
-                if freq_map[char] == 0:
-                    missing -= 1
-            r += 1
-        else:
+    while r < len(s1):
+        char = s1[r]
+        if char in freq_map:
+            freq_map[char] -= 1
+            if freq_map[char] == 0:
+                missing -= 1
+        r += 1
+
+        while missing == 0:
             shortest = min(shortest, r - l)
-            char = s1[l]
-            if char in freq_map:
-                freq_map[char] += 1
-                if freq_map[char] == 1:
+            if s1[l] in freq_map:
+                freq_map[s1[l]] += 1
+                if freq_map[s1[l]] > 0:
                     missing += 1
             l += 1
+
     return shortest if shortest != float('inf') else -1
 
 

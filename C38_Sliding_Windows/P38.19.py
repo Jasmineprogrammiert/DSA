@@ -1,31 +1,41 @@
-# Exactly k bad days = (at most k) - (at most k-1)
-# at_most: longest-window two-pointer; each grow adds r - l valid subarrays
+# Exactly k = At most k - At most (k-1)         REFRAME
+# move r every pass,
+# move l when the window holds more than k bad days
+# BAD_DAY < 10, k = 1
+
+# 0 1  2        INDEX
+# 0 20 5        ARR
+#   l
+#         r
+# bad_d = 1
+# at_most_k = 5
 
 # n: length of sales
-# T: O(n) — at_most moves l and r forward only (≤ 2n moves), O(1) work each; called twice → still O(n)
-# S: O(1) — fixed scalar variables, no extra structures
+# T: O(n) - each element is visited at most twice, O(2n) -> O(n)
+# S: O(1) - 4 vars are used regardless on the arr size
 
-def count_subarrays(sales, k):
-    if k == 0:
-        return at_most(sales, 0)
-    return at_most(sales, k) - at_most(sales, k - 1)
+def count_subarr(sales, k):
+    def at_most(k):
+        l, r = 0, 0
+        bad_d = 0
+        at_most_k = 0
 
-def at_most(sales, k):
-    l, r = 0, 0
-    bad = 0
-    count = 0
-    while r < len(sales):
-        can_grow = bad < k or sales[r] >= 10
-        if can_grow:
+        while r < len(sales):
             if sales[r] < 10:
-                bad += 1
+                bad_d += 1
             r += 1
-            count += r - l
-        else:
-            if sales[l] < 10:
-                bad -= 1
-            l += 1
-    return count
+            
+            while bad_d > k:
+                if sales[l] < 10:
+                    bad_d -= 1
+                l += 1
+            
+            at_most_k += r - l
+        return at_most_k
+    
+    if k == 0:
+        return at_most(0)
+    return at_most(k) - at_most(k - 1)
 
 
 # # Count Subarrays With Exactly K Bad Days

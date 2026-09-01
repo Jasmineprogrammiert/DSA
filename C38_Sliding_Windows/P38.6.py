@@ -1,21 +1,34 @@
-# Kadane via window: drop the prefix the moment it would turn the running sum negative (it can only hurt later sums); seed max_sum with max(arr) to cover the all-negative case
-#
+# 0, 1  2  3   4        INDEX
+# 1, 2, 3, -2, 1        ARR
+#              r
+# max_sum = max(max_sum, sum)
+#         = 6
+# sum     = 5
+
+
+# 0, 1  2  3   4        INDEX
+# 1, 2, 3, -8, 7        ARR
+#                 r
+# max_sum = max(max_sum, sum)
+#         = 7
+# sum     = 7
+# advance r if win_sum + arr[r] >= 0, otherwise reset the window
+
 # n: length of arr
-# T: O(n) — single pass (plus one O(n) max for the seed)
-# S: O(1) — only max_sum, window_sum, r
+# T: O(n) - each element is iterated once by r
+# S: O(1) - only three variables are used regardless of input size
 
 def max_subarr_sum(arr):
     max_sum = max(arr)
-    if max_sum <= 0:
-        return max_sum
-    window_sum = 0
+    win_sum = 0
     r = 0
+
     while r < len(arr):
-        if window_sum + arr[r] >= 0:
-            window_sum += arr[r]
-            max_sum = max(max_sum, window_sum)
+        if win_sum + arr[r] >= 0:
+            win_sum += arr[r]
+            max_sum = max(max_sum, win_sum)
         else:
-            window_sum = 0
+            win_sum = 0
         r += 1
     return max_sum
 

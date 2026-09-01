@@ -1,12 +1,12 @@
-# a good-day streak is a run that only grows or fully resets — track its length, no left pointer
-#   walk r across sales, classifying each day (good = sales[r] >= 10)
-#   good day: extend the current run (streak += 1), then update the best seen
-#   bad day: the run is broken, reset streak to 0
-#   return the longest run found
-#
-# n: number of days
-# T: O(n) — single pass, constant work per day
-# S: O(1) — just streak, longest, and r
+# a good-day streak only grows or fully resets - track length directly, no left pointer needed
+# prefer the streak counter - l/r window works too, but tracks positions to derive a length you never actually need
+
+
+# ---- 1. streak counter ----
+
+# n: length of sales
+# T: O(n) - single pass
+# S: O(1) - only two vars used regardless of input size
 
 def longest_streak(sales):
     streak, longest = 0, 0
@@ -19,6 +19,32 @@ def longest_streak(sales):
             streak = 0
         r += 1
     return longest
+
+
+# ---- 2. l/r window ----
+
+# 0 1  2 3  4  5        INDEX
+# 0 14 7 12 10 20       SALES
+#        l
+#                 r
+# cur_best = max(cur_best, r - l) = 3
+
+# n: length of sales
+# T: O(n) - single pass; l is reassigned on a bad day instead of iterating
+# S: O(1) - only three vars used regardless of input size
+
+def longest_streak_lr(sales):
+    l, r = 0, 0
+    cur_best = 0
+
+    while r < len(sales):
+        if sales[r] < 10:
+            r += 1
+            l = r
+        else:
+            r += 1
+            cur_best = max(cur_best, r - l)
+    return cur_best
 
 
 # # Longest Good Day Streak

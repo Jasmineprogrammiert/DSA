@@ -1,37 +1,76 @@
-# Same window skeleton as P38.11, but the limit is "<= k distinct titles", not "<= k boosts":
-#   - validity is a freq map of titles, not a running cost scalar
-#   - can grow if title is a repeat (free) or there's room for a new one (distinct < k)
-#   - shrinking must delete a title's key when its count hits 0, not just subtract a cost
-#   - k >= 1 -> any single title fits, so P38.11's empty-window (l == r) guard isn't needed
-#
-# n: number of days
-# T: O(n) — each index enters via r once and leaves via l at most once;
-#           titles are <= 100 chars, so hashing is O(1)
-# S: O(k) — the window holds at most k distinct titles at any moment
+# eager      predict before the add: can the window take best_seller[r] and stay valid?
+# lazy       add, then repair: while the window is invalid, evict from the left
+#            prefer lazy - no prediction to get wrong, and l is free to catch up to r
+
+
+# ---- 1. lazy: add, then repair ----
+
+# move r every pass,
+# move l while the window HOLDS more than k distinct titles
+
+# n: length of best_seller
+# k: max distinct titles
+# T: O(n) - each title enters and leaves the window once
+# S: O(k) - the dict holds at most k + 1 titles, between the add and the repair
 
 from collections import defaultdict
 
+def max_at_most_k_distinct_lazy(best_seller, k):
+    l, r = 0, 0
+    longest = 0
+    freq_map = defaultdict(int)
+
+    while r < len(best_seller):
+        freq_map[best_seller[r]] += 1
+        r += 1
+
+        while len(freq_map) > k:
+            left = best_seller[l]
+            freq_map[left] -= 1
+            if freq_map[left] == 0:
+                del freq_map[left]
+            l += 1
+
+        longest = max(longest, r - l)
+    return longest
+
+
+# ---- 2. eager: predict before adding ----
+
+# move r to grow the window,
+# move l when the window would hold more than k distinct titles
+#
+# len(freq_map) < k     there is room for a NEW title
+# title in freq_map     already counted, so it costs no room
+
+# S: O(k) - the dict doesn't hold more than k titles
+
+# k = 2             AT MOST 2 DISTINCTS
+# 0 1 2 3 4 5       INDEX
+# 1 1 2 1 3 1       ARR
+#       l
+#             r
+# longest = 4
+# freq_map = {1: 2, 3: 1}
 
 def max_at_most_k_distinct(best_seller, k):
     l, r = 0, 0
     longest = 0
-    window_counts = defaultdict(int)
+    freq_map = defaultdict(int)
 
     while r < len(best_seller):
         title = best_seller[r]
-        can_grow = title in window_counts or len(window_counts) < k
-
+        can_grow = len(freq_map) < k or title in freq_map
         if can_grow:
-            window_counts[title] += 1
+            freq_map[title] += 1
             r += 1
             longest = max(longest, r - l)
         else:
             left = best_seller[l]
-            window_counts[left] -= 1
-            if window_counts[left] == 0:
-                del window_counts[left]
+            freq_map[left] -= 1
+            if freq_map[left] == 0:
+                del freq_map[left]
             l += 1
-
     return longest
 
 
