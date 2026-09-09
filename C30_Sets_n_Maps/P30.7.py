@@ -1,24 +1,21 @@
-# Length check - if len(s2) != len(s) + 1, return False upfront
-# Build a frequency map of s (since the order doesn't matter)
-# Loop through s2, decrementing counts. 
-#       If a count goes below 0, either the it isn't in s, or it appears more than the frequency count. Increment integer "extra" from 0
-#       If extra > 1, return False
-# Return True
+# n: length of s
+# k: length of s2, k = n + 1
+# T: O(n) - init is one pass over s; each method call is O(1) to copy the map plus one pass over s2
+# S: O(1) - keys are lowercase letters, so the map holds at most 26 entries however long s is
 
-# n: the length of s
-# m: the length of s2
-# T: O(n + m) - build map O(n), loop s2 O(m), look up a map takes O(1). Simplify to O(n) since m = n + 1 after length check
-# S: O(1) - since freq_count stores lowercase English characters, it's capped at 26
+# length check, then count s once and spend the counts against s2 - more than one extra fails
+
+from collections import defaultdict
 
 class Checker:
     def __init__(self, s):
         self.s = s
-        self.freq_count = {}
+        self.freq_count = defaultdict(int)
         for char in s:
-            self.freq_count[char] = self.freq_count.get(char, 0) + 1
+            self.freq_count[char] += 1
     
     def expands_into(self, s2):
-        if len(s2) != len(self.s) + 1:
+        if len(self.s) + 1 != len(s2):
             return False
         
         extra = 0
@@ -29,13 +26,12 @@ class Checker:
                 freq[char] -= 1
                 if freq[char] < 0:
                     extra += 1
-            else: 
+            else:
                 extra += 1
-                
+            
             if extra > 1:
                 return False
         return True
-
 
 
 # # Word Expansion Class

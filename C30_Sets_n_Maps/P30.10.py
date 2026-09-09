@@ -1,33 +1,40 @@
-# ***** Method 1 (better) *****
-# res = set() - anomaly
-# seen = set()
-# opened = dict() <ticket_number, agent> (removed on close)
-# agent_open = dict() <agent, ticket_number> (removed on close)
-# 
-# For each [agent, action, ticket] in log:
-#   agent in agent_open on a different ticket? -> add that other ticket to res
-#   If ticket already in res -> continue
-#
-#   If "open":
-#       1. ticket in seen? -> anomaly
-#       2. Update: 
-#           seen.add(ticket), 
-#           opened[ticket] = agent, 
-#           agent_open[agent] = ticket
-#
-#   If "close":
-#       1. ticket not in opened? -> anomaly
-#       2. opened[ticket] != agent? -> anomaly
-#       3. Update:
-#           del opened[ticket], 
-#           del agent_open[agent]
-#
-# After the loop: any ticket still in opened -> anomaly
-# Return list(res)
+# string  open/close  num
+# (agent, action, ticket_number)
+
+# return all ticket_number with anomalies, in any order
+# without anomalies:
+#   1. opened and closed once, in order
+#       - on OPEN: is ticket in seen(set)?
+#       - on CLOSE: is ticket in opened(map(ticket: agent))?
+#   2. same opening and closing agent
+#       - on CLOSE: opened[ticket] = agent
+#   3. The agent didn't do any action for a different ticket between opening and closing
+#       - agent_open[agent] = ticket
+
+# log = [
+    # ["Dwight", "close", 2],
+    # ["Dwight", "open", 2],
+    # ["Drew", "open", 32],
+    # ["Drew", "close", 32],
+    # ["Drew", "open", 32],
+    # ["Drew", "close", 32],
+    # ["Susa", "open", 7],
+    # ["Jo", "close", 7],
+    # ["Susa", "open", 33],
+    # ["Jo", "open", 8],
+    # ["Jo", "open", 36],
+    # ["Jo", "close", 8],
+    # ["Susa", "close", 33]
+# ]
+#       [2, 32, 7, 8, 36]
+# res = {2, 32, 7, 8, 36} -> turn to arr
+# seen = {}
+# opened = {}
+# agent_open = {}
 
 # n: length of log
-# T: O(n) - once pass through log, all dict/set operations are O(1)
-# S: O(n) - the set and map each stores at most n entries
+# T: O(n) - each item in the log is iterated once, then opened is iterated once at the end. Operations like add, lookup and update take O(1) time
+# S: O(n) - res, seen, opened hold at most one entry per ticket; agent_open one per agent. Both <= n
 
 def action_log_anomalies(log):
     res = set()
@@ -40,65 +47,24 @@ def action_log_anomalies(log):
             res.add(agent_open[agent])
         if ticket in res:
             continue
-        
+
         if action == "open":
             if ticket in seen:
                 res.add(ticket)
-                continue
-            seen.add(ticket)
-            opened[ticket] = agent
-            agent_open[agent] = ticket
-        
-        else: # close
-            if ticket not in opened or opened[ticket] !=agent:
+            else:
+                seen.add(ticket)
+                opened[ticket] = agent
+                agent_open[agent] = ticket
+        else:
+            if ticket not in opened or agent != opened[ticket]:
                 res.add(ticket)
-                continue
-            del opened[ticket]
-            del agent_open[agent]
-    
+            else:
+                del opened[ticket]
+                del agent_open[agent]
+                
     res.update(opened.keys())
+
     return list(res)
-
-# print(action_log_anomalies([
-#     ["Dwight", "close", 2],
-#     ["Dwight", "open", 2],
-#     ["Drew", "open", 32],
-#     ["Drew", "close", 32],
-#     ["Drew", "open", 32],
-#     ["Drew", "close", 32],
-#     ["Susa", "open", 7],
-#     ["Jo", "close", 7],
-#     ["Susa", "open", 33],
-#     ["Jo", "open", 8],
-#     ["Jo", "open", 36],
-#     ["Jo", "close", 8],
-#     ["Susa", "close", 33]
-# ]))
-    
-# ***** Method 2 *****
-# res = set() - anomaly
-# ticket_map = dict() <ticket_number, [state, agent]> (never removed)
-# agent_map = dict() <agent, ticket_number> (removed on close)
-#
-# For each [agent, action, ticket] in log:
-#   agent in agent_map on a different ticket? -> add that other ticket to res
-#
-#   If "open":
-#       1. ticket in ticket_map? -> anomaly
-#       2. Update:
-#           ticket_map[ticket] = ["open", agent],
-#           agent_map[agent] = ticket
-#
-#   If "close":
-#       1. ticket not in ticket_map, or state is "closed"? -> anomaly
-#       2. ticket_map[ticket][agent] != agent? -> anomaly
-#       3. Update:
-#           ticket_map[ticket][state] = "closed",
-#           del agent_map[agent]
-#
-# After the loop: any ticket with state "open" in ticket_map -> anomaly
-# Return list(res)
-
 
 
 # # Action Log Anomalies

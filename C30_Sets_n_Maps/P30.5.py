@@ -1,48 +1,33 @@
-# An IP can be shared by multiple domains, a subdomain can be registered with different domains
-# Can put IP and domain as key-value pairs. The key is IP, the value is a set of domains
-# {
-#     "192.168.1.1": {"example.com", "example.org"},
-#     "192.168.1.2": {"domain.com"}
-# }
-# Can put domain and subdomain as key-value pairs. The key is domain, the value is a set of subdomains
-# {
-#     "example.com": {"www", "a"},
-#     "example.org": {"bbb", "b", "c"},
-# }
+# multiple IP addresses
+# multiple domains can share the same IP address
+# Each domain can have multiple subdomains
 
-# n: the number of IPs
-# m: the number of domains
-# k: the number of subdomains
-# T: O(1) - all dictionary lookups and set operations (add, lookup) are O(1) on average
-# S: O(n + m + k)
-#       ip_to_domain: at most n keys, with m total domains across all sets -> O(n + m)
-#       domain_to_subdomain: at most m keys, with k total subdomains across all sets -> So O(m + k)
-#       Combined: O(n + 2m + k) -> O(n + m + k)
+# ip_dom = {ip: {domain}}
+# dom_subdom = {domain: {subdomain}}
 
-class domain_resolver:
+# n: number of IPs
+# m: number of domains
+# k: number of subdomains
+# T: O(1) - average per operation,  every step is a dict or set lookup/ insert
+# S: O(n + m + k) - ip_dom O(n + m) + dom_subdom O(m + k)
+
+from collections import defaultdict
+
+class DomainResolver:
     def __init__(self):
-        self.ip_to_domain = dict()
-        self.domain_to_subdomain = dict()
+        self.ip_dom = defaultdict(set)
+        self.dom_subdom = defaultdict(set)
     
-    def register_domain(self, ip, domain):
-        if ip not in self.ip_to_domain:
-            self.ip_to_domain[ip] = set()
-        self.ip_to_domain[ip].add(domain)
-
-    def register_subdomain(self, domain, subdomain):
-        if domain not in self.domain_to_subdomain:
-            self.domain_to_subdomain[domain] = set()
-        self.domain_to_subdomain[domain].add(subdomain)
+    def register_domain(self, ip, dom):
+        self.ip_dom[ip].add(dom)
     
-    def has_subdomain(self, ip, domain, subdomain):
-        if ip not in self.ip_to_domain:
-            return False
-        if domain not in self.ip_to_domain[ip]:
-            return False
-        if domain not in self.domain_to_subdomain:
-            return False
-        return subdomain in self.domain_to_subdomain[domain]
-
+    def register_subdomain(self, dom, subdom):
+        self.dom_subdom[dom].add(subdom)
+    
+    def has_subdomain(self, ip, dom, subdom):
+        if dom in self.ip_dom.get(ip, set()) and subdom in self.dom_subdom.get(dom, set()):
+            return True
+        return False
 
 
 # # Domain Resolver

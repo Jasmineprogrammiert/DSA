@@ -1,37 +1,33 @@
-# # Pattern — Prefix Sum + Hashmap (subarray sum = k)   [NEW — high value]
-#
 # Trigger:
-#     COUNT/FIND subarrays by their SUM, negatives allowed
-#     -> negatives kill sliding window (sum not monotonic); flip to hashmap lookup.
+#     COUNT subarrays by their SUM, negatives allowed
+#     -> negatives kill sliding window (sum not monotonic); flip to hashmap lookup
 #
-# Core identity:  sum(l..r) = k  <=>  prefix[r] - prefix[l-1] = k
-#                                <=>  prefix[l-1] = prefix[r] - k
-# -> sweep r once; at each r ask "how many EARLIER prefixes == running - k?"
-#   -> seen = {prefix_value: times it occurred}, a HOW-MANY map (tally)
-#      key = a running-total value the sweep has visited
-#      val = how many past moments sat at that total; each one = a distinct
-#            subarray ending at r (starts right after that moment)
+# Identity:  sum(l..r) = k  <=>  running[r] - running[l-1] = k
+#                           <=>  running[l-1] = running[r] - k
+# -> sweep r once; at each r ask "how many EARLIER running totals == running - k?"
+#    each one is a prefix to subtract = one subarray ending at r
 #
-# seen = {0: 1}            -> empty prefix occurred once, before index 0,
+# seen = {running total: times seen so far}
+# seen = {0: 1}            -> the empty prefix before index 0 has total 0,
 #                             so subarrays starting at index 0 get counted
-# running = count = 0
-# for x in arr:
-#     running += x         -> running == prefix[r]
-#     count += ...         -> occurrences of (running - k) seen so far
-#     ...                  -> record running; count BEFORE record, else k = 0 matches itself
 #
+# three moves per element:
+#     running += x
+#     count += seen[running - k]     -> look up BEFORE recording, else k = 0 matches itself
+#     record running
+
 # n: length of arr
 # T: O(n) — one sweep, O(1) hashmap lookup/insert per element
 # S: O(n) — frequency map holds up to n + 1 distinct prefix values
 
-def count_subarrays_with_sum_k(arr, k):
+def count_subarray(arr, k):
     seen = {0: 1}
     running = 0
     count = 0
-    for x in arr:
-        running += x
-        count += seen.get(running - k, 0)  # earlier prefixes k below me -> subarrays ending here
-        seen[running] = seen.get(running, 0) + 1  # record self for future r's
+    for elem in arr:
+        running += elem
+        count += seen.get(running - k, 0)
+        seen[running] = seen.get(running, 0) + 1
     return count
 
 

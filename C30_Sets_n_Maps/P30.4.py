@@ -1,22 +1,24 @@
-# Sort each IP list, then convert the sorted list to tuple (lists are mutable, so they can't be set keys) to use it as a set key
-# If the tuple already exists in the set, return True (duplicate found)
-# Otherwise, add it and continue; return False if no duplicates found after all users are checked
-# n: the number of users
-# k: the number of IPs per user, topped at 10
-# T: O(n) - for each user, sort their IP list O(k log k) and check the record in the set, so O(n * k log k). Since k <= 10, simplifies to O(n)
-# S: O(n) - in the worst case, the set stores n*k IPs, O(n * k) is simplified to O(n)
+# n: number of users
+# k: number of IPs per user, at most 10
+# T: O(n) - for each user, sort their IPs O(k log k) and do one O(k) set lookup/ insert. Since k <= 10, O(n * k log k) -> O(n)
+# S: O(n) - seen has at most n users * k IPs. Since k <= 10, O(n * k) -> O(n)
+
+# seen = {
+#       (52, 203, 208),
+#       (111, 222, 222),
+# }
 
 def multi_account_cheating(users):
-    checking = set()
+    seen = set()
+
     for _, IPs in users:
-        immutable_list = tuple(sorted(IPs))
-        
-        if immutable_list in checking:
+        tuple_IPs = tuple(sorted(IPs))
+
+        if tuple_IPs in seen:
             return True
-        checking.add(immutable_list)
+        seen.add(tuple_IPs)
     return False
 
-    
 
 # # Multi-Account Cheating
 

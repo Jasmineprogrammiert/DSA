@@ -1,92 +1,85 @@
-# # Pattern — Sort to Group (hash-free grouping, same total-minus identity)
+# intersection: the set of elements that appears in every set
+# Return the index of the set that should be excluded to maximize intersection
+# tie -> return the smallest index
+
+
+# in all k sets          -> in every answer, doesn't help choose
+# in exactly k-1         -> votes for the ONE set it's missing from
+# in fewer than k-1      -> never in, ignore
+
+# sets = [[1, 2, 3], [3, 2, 1], [1, 4, 5], [1, 2]]
 #
-# Trigger:
-#     the map is only used to GROUP equal elements and take per-group bulk
-#     stats (freq, idx sum) — never random lookups
-#     -> sort instead: equal elements become ADJACENT, each group is one run,
-#        and a running sum over the run replaces the map entry.
+# Loop 1 - build freq_map, one (count, seen_idx_sum) per element:
+#   idx=0  [1,2,3]   1:(1,0)  2:(1,0)  3:(1,0)
+#   idx=1  [3,2,1]   3:(2,1)  2:(2,1)  1:(2,1)
+#   idx=2  [1,4,5]   1:(3,3)  4:(1,2)  5:(1,2)
+#   idx=3  [1,2]     1:(4,6)  2:(3,4)
+#   final:           1:(4,6)  2:(3,4)  3:(2,1)  4:(1,2)  5:(1,2)
+#   read 2:(3,4) as "in 3 sets, whose indices add to 4 (0+1+3)"
 #
-# Flatten to (elem, set_idx) pairs -> sort -> scan runs:
-#     run length k   -> element in every set, no info for the argmax
-#     run length k-1 -> missing from exactly one set:
-#         missing_idx = (0 + 1 + ... + k-1) - idx_sum of the run
-#     gains is a plain array indexed by set -> left-to-right argmax gives the
-#     smallest-index tie-break for free.
+# Setup: n = 4, all_idx_sum = 0+1+2+3 = 6, gains = [0,0,0,0]
 #
+# Loop 2 - the votes, only count == n-1 matters:
+#   1:(4,6)   count 4     skip
+#   2:(3,4)   count 3  -> missing = 6 - 4 = 2  -> gains[2] += 1  -> [0,0,1,0]
+#   3:(2,1)   count 2     skip
+#   4:(1,2)   count 1     skip
+#   5:(1,2)   count 1     skip
+#
+# Return: max([0,0,1,0]) is 1, and the value 1 sits at position 2 -> gains.index(1) = 2
+
+# n: number of elements across all sets
+# k: number of sets
+# T: O(n) - the first loop visits every element once; the 2nd visits each unique element once, which is <= n. Dict and list operations like lookup and append are O(1)
+# S: O(n + k) - freq_map holds at most n entries, gains holds k
+
+from collections import defaultdict
+
+def largest_set_intersection(sets):
+    freq_map = defaultdict(lambda: (0, 0))
+    for idx, arr in enumerate(sets):
+        for elem in arr:
+            count, seen_idx_sum = freq_map[elem]
+            freq_map[elem] = (count + 1, seen_idx_sum + idx)
+    
+    n = len(sets)
+    all_idx_sum = sum(range(n))
+    gains = [0] * n
+    for count, seen_idx_sum in freq_map.values():
+        if count == n - 1:
+            missing = all_idx_sum - seen_idx_sum
+            gains[missing] += 1
+    return gains.index(max(gains))
+
+
+# ---- Reference: the sort-to-group version (backs the § 30 line) ----
+
+# Trigger: the map only GROUPS equal elements for per-group stats (count, seen_idx_sum), never a random lookup
+#          -> sort instead: equal elements become adjacent, each group is one run, a running sum replaces the map entry
+# Same votes as above; only the bookkeeping changes. Worth it when hashing is off the table
+
 # n: total number of elements across all sets
 # k: number of sets
-# T: O(n log n) — the sort dominates; the run scan is O(n). The map version
-#    below is O(n) average — this trades a log factor for no hashing and
-#    simpler bookkeeping.
-# S: O(n + k) — the flattened pairs and the gains array
+# T: O(n log n) - the sort dominates; the run scan is O(n). Trades a log factor for no hashing
+# S: O(n + k) - the flattened pairs, plus gains
 
 def largest_set_intersection_sorted(sets):
     k = len(sets)
-    pairs = sorted((elem, i) for i, s in enumerate(sets) for elem in s)
-    total_idx_sum = k * (k - 1) // 2
+    all_idx_sum = sum(range(k))
+    pairs = sorted((elem, idx) for idx, arr in enumerate(sets) for elem in arr)
 
     gains = [0] * k
-    pair_idx = 0
-    while pair_idx < len(pairs):
-        elem = pairs[pair_idx][0]
-        freq, idx_sum = 0, 0
-        while pair_idx < len(pairs) and pairs[pair_idx][0] == elem:
-            idx_sum += pairs[pair_idx][1]
-            freq += 1
-            pair_idx += 1
-        if freq == k - 1:
-            # run misses exactly one set -> total minus finds it
-            gains[total_idx_sum - idx_sum] += 1
-
-    best = 0
-    for i in range(k):
-        if gains[i] > gains[best]:
-            best = i
-    return best
-
-
-# freq_map: {element: (freq, idx_sum)}
-# gains = {}
-# n = len(sets)
-# total_idx_sum = sum(range(n))
-#
-# 1. Loop through each element in the set to build the freq_map, idx_sum is the sum of the index of the set the element is in
-# 2. For each element where freq == n-1:
-#   n-1: element missing from exactly one set, removing that set adds it to the intersection
-#   missing_idx = total_idx_sum - idx_sum
-#   gains[missing_idx] += 1 => removing this set gain x elements
-#
-# Return idx with max gains (smallest idx on tie, 0 if none)
-#
-# n: total number of elements across all sets
-# k: number of sets
-# T: O(n) - iterate over every element once to build freq_map, then scan unique entries (<= n)
-# S: O(n + k) - freq_map has at most n entries, gains has at most k entries
-
-def largest_set_intersection(sets):
-    freq_map = {}
-    gains = {}
-    n = len(sets)
-    total_idx_sum = sum(range(n))
-
-    for i, s in enumerate(sets):
-        for elem in s:
-            if elem not in freq_map:
-                freq_map[elem] = (1, i)
-            else:
-                freq, idx_sum = freq_map[elem]
-                freq_map[elem] = freq + 1, idx_sum + i
-
-    for freq, idx_sum in freq_map.values():
-        if freq == n - 1:
-            missing_idx = total_idx_sum - idx_sum
-            gains[missing_idx] = gains.get(missing_idx, 0) + 1
-
-    if not gains:
-        return 0
-
-    max_gain = max(gains.values())
-    return min(idx for idx, g in gains.items() if g == max_gain)
+    i = 0
+    while i < len(pairs):
+        elem = pairs[i][0]
+        count, seen_idx_sum = 0, 0
+        while i < len(pairs) and pairs[i][0] == elem:   # one run = one element
+            seen_idx_sum += pairs[i][1]
+            count += 1
+            i += 1
+        if count == k - 1:
+            gains[all_idx_sum - seen_idx_sum] += 1
+    return gains.index(max(gains))
 
 
 # # Largest Set Intersection
