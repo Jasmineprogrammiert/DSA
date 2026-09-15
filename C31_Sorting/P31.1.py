@@ -1,23 +1,22 @@
-# Use a frequency map to count the appearance of the letter, Map<letter, count>
-# Sort the letters by count descending
-# If two frequencies are the same, break the tie alphabetically
-# Return the sorted list of letters
-# 
+# return a sorted array with all the letters from
+#       most frequent to least frequent
+#       break the tie alphabetically
+
+# sorted(freq_map) based on count, then alphabetically if tie
+# list(keys in sorted freq_map)
+
 # n: length of word
-# T: O(n) - iterate through each char to build frequency map, sorting is O(1) since at most 26 letters
-# S: O(1) - frequency map and result list are bounded by 26 lowercase letters
+# T: O(n) - each letter in word is iterated once; the sort is over at most 26 keys, O(26 log 26) = O(1)
+# S: O(1) - regardless of the length of word, the dictionary and the result hold at most 26 letters
+
+from collections import defaultdict
 
 def sorting_by_frequency(word):
-    count = dict()
-    for char in word:
-        if char not in count:
-            count[char] = 0
-        count[char] += 1
+    freq_map = defaultdict(int)
+    for w in word:
+        freq_map[w] += 1
     
-    return sorted(count, key=lambda char: (-count[char], char))
-
-# print(sorting_by_frequency("supercalifragilisticexpialidocious"))
-
+    return sorted(freq_map, key=lambda ch: (-freq_map[ch], ch))
 
 
 # # Sorting By Frequency

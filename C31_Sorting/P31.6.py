@@ -1,66 +1,51 @@
-# Approach 1 - Heap: O(n log k)
-#   Iterate through the arr, maintaining a heap of size k
-#   that always holds the k smallest elements seen so far
-# 
 # n: length of arr
 # k: number of smallest elements
-# T: O(n log k) - iterate through arr takes O(n), and each heap operation is O(log k) since the heap has at most k elements
-# S: O(k) - the heap holds at most k elements
-# 
-import heapq
+# T: O(n) average - one O(n) pass, then one recursive call on about half: n + n/2 + n/4 + ... < 2n. Worst O(n^2) with bad pivots, which random.choice makes unlikely
+# S: O(n) - the three lists total n per call and shrink by half each level, same series; plus O(log n) recursion depth
+
+import random
 
 def first_k(arr, k):
+    if k == 0:
+        return []
+    if k >= len(arr):
+        return arr
+
+    pivot = random.choice(arr)
+    small, mid, large = [], [], []
+    for elem in arr:
+        if elem < pivot:
+            small.append(elem)
+        elif elem == pivot:
+            mid.append(elem)
+        else:
+            large.append(elem)
+
+    if k <= len(small):
+        return first_k(small, k)
+    return small + mid + first_k(large, k - len(small) - len(mid))
+
+
+# ---- Reference: size-k max-heap, O(n log k) guaranteed ----
+
+# keep a max-heap of the k smallest seen so far; a new element that beats the heap top replaces it
+# heapq is a min-heap, so push -elem to get a max-heap
+
+# n: length of arr
+# k: number of smallest elements
+# T: O(n log k) - each of the n elements does at most one heap operation on a heap of size k
+# S: O(k) - the heap holds at most k elements
+
+import heapq
+
+def first_k_heap(arr, k):
     max_heap = []
     for elem in arr:
         if len(max_heap) < k:
-            # Negate values to simulate a max_heap (largest on top)
             heapq.heappush(max_heap, -elem)
         elif elem < -max_heap[0]:
             heapq.heapreplace(max_heap, -elem)
     return [-x for x in max_heap]
-
-# Approach 2 - Quickselect: O(n) average
-#   1. Pick a random pivot and partition the arr so that
-#      smaller elements are on the left, larger on the right
-#   2. If pivot index == k --> left side is the answer
-#      If pivot index > k --> recurse left only
-#      If pivot index < k --> recurse right only
-# 
-# n: length of arr
-# k: number of smallest elements
-# T: O(n) average - each recursion roughly halves the array: n + n/2 + n/4 + ... = 2n
-# S: O(n) - left, mid and right lists hold a copy of the entire array at each level
-# 
-import random
-
-def first_k(arr, k):
-    if k >= len(arr): return arr
-    
-    pivot = arr[random.randint(0, len(arr) - 1)]
-    left = [x for x in arr if x < pivot]
-    mid = [x for x in arr if x == pivot]
-    right = [x for x in arr if x > pivot]
-    
-    if len(left) >= k:
-        return first_k(left, k)
-    elif len(left) + len(mid) >= k:
-        return left + mid[:k - len(left)]
-    else:
-        return left + mid + first_k(right, k - len(left) - len(mid))
-
-# Brute-force
-# def first_k(arr, k):
-#     res = []
-#     for elem in arr:
-#         if len(res) < k:
-#             res.append(elem)
-#         elif elem < res[k-1]:
-#             res[k-1] = elem
-#         res.sort()
-#     return res
-
-# print(first_k([15, 4, 13, 8, 10, 5, 2, 20, 3, 9, 11, 27], 5))
-
 
 
 # # First K

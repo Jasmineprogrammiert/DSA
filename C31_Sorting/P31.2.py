@@ -1,33 +1,28 @@
-# If only one circle, return True
-# Sort circles by radius descending
-# For each adjacent pair, 
-#   check distance(centers) + smallerRadius >= largerRadius => False
-#         distance(centers) = √((x1 - x2)² + (y1 - y2)²) 
-# Return True
-# 
+# 1. There is a single circle.
+# 2. One circle completely surrounds all the others (without touching boundaries), and the other circles are themselves _nested_ (this is a recursive definition).
+# If 1 and 2: True. else False
+
+# sort by radius, biggest first -> contains is transitive, check neighbouring pairs only
+# inside: d + r < R (strict, touching fails), d = sqrt(dx^2 + dy^2) between centres
+# trap: axis shadows (x +- r) are not containment
+
 # n: length of circles
-# T: O(n log n) - sorting O(n log n) + linear scan O(n)
-# S: O(n) - sorted() creates a new list
+# T: O(n log n) - the sort dominates; the loop iterates the n - 1 neighbouring pairs once, O(1) each
+# S: O(n) - Timsort uses up to O(n) extra space; the loop itself is O(1)
 
 import math
 
 def nested_circles(circles):
-    if len(circles) <= 1: return True
-    
-    circles = sorted(circles, key=lambda circle: circle[1], reverse=True)
+    if len(circles) == 1:
+        return True
+    circles.sort(key=lambda circle: circle[1], reverse=True)
     for i in range(len(circles) - 1):
         (x1, y1), r1 = circles[i]
-        (x2, y2), r2 = circles[i+1]
-        distance = math.sqrt((x1-x2)**2 + (y1-y2)**2)
+        (x2, y2), r2 = circles[i + 1]
+        distance = math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
         if distance + r2 >= r1:
             return False
     return True
-
-# print(nested_circles([
-#     ((4, 4), 5),  # Circle with center (4, 4) and radius 5
-#     ((8, 4), 2)   # Circle with center (8, 4) and radius 2
-# ]))                                 
-   
 
     
 # # Nested Circles
