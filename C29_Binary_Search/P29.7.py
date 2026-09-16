@@ -1,47 +1,29 @@
-# try to find the position of the target in a 2D grid, otherwise return [-1, -1]
-# to flatten out the 2D array, imagine it's a flat array
-# can binary search the array withotu creating one:
-    # l, r = 0, R * C - 1
-    # R, C = len(grid), len(grid[0]) 
-# To find the target's position in the 2D array: 
-    # row, col = i // C, i % C
-# If any target is found, 
-# it will be the first element in the "after" section
+# target = 4
 
-# traisition_point_recipe:
-    # is_before() when grid[row][col] < target
-    # l, r = 0, R*C-1
-    # row = i // C
-    # col = i % C
-    # handle three edge cases:
-        # 1. the range is empty (not applicable)
-        # 2. l is after
-        # 3. r is before
-    
-    # where l and r are not next to each other (r - l > 1)
-#        mid = (l + r) // 2
-#        if is_before(mid):
-#            l = mid
-#        else:
-#            r = mid
-#    return l (last 'before'), r (first 'after'), or something else,
-#    depending on the problem
+# 0 1 2 3 4 5 6 7   IDX
+# 1 2 4 5 6 7 8 9   GRID
+#   l
+#     r
 
-# n: R * C
-# T: O(log n) - binary search
-# O: O(1)
+# flat index i <-> cell: row = i // C, col = i % C
+# is_before(i): value at i < target -> r ends on the first value not below target, where target sits if it exists
+
+# n: number of cells, R * C
+# T: O(log n) - one binary search over the flattened grid; each probe is an O(1) cell read
+# S: O(1) - a fixed number of variables regardless of the grid size
 
 def search_in_sorted_grid(grid, target):
     R, C = len(grid), len(grid[0])
 
     def is_before(i):
-        row, col = i // C, i % C
-        return grid[row][col] < target
-    
-    if grid[0][0] > target or grid[R-1][C-1] < target:
-         return [-1, -1]
-    
-    l, r = 0, R*C - 1
+        return grid[i // C][i % C] < target
+
+    l, r = 0, R * C - 1
+    if not is_before(l):
+        return [0, 0] if grid[0][0] == target else [-1, -1]
+    if is_before(r):
+        return [-1, -1]
+
     while r - l > 1:
         mid = (l + r) // 2
         if is_before(mid):
@@ -49,14 +31,8 @@ def search_in_sorted_grid(grid, target):
         else:
             r = mid
 
-    # r is the first element that is NOT < target
     row, col = r // C, r % C
-    if grid[row][col] == target:
-        return [row, col]
-    return [-1, -1]
-# print(search_in_sorted_grid([[1, 2, 4, 5],
-#         [6, 7, 8, 9]], 4))
-
+    return [row, col] if grid[row][col] == target else [-1, -1]
 
 
 # # Search in Sorted Grid

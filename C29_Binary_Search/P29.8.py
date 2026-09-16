@@ -1,56 +1,31 @@
-# len(arr) is unknown => double the index until eventually 
-#       (1) go "out of bounds" and the API returns -1 or 
-#       (2) find an element greater than the target.
-# Exponential search: If the length is n, the end of the array can be reached in approx. log2(n) doublings
+# no length -> double k until fetch(k) is out of bounds or >= target, then binary search [k // 2, k]
+# out of bounds counts as 'after'
 
-# transition_point_recipe():
-# is_before(val) when it's smaller than target
-# inisialize l and r to the first and last values in the range:
-    #   l = 0
-# handle three edge cases:
-#       the range is empty (not applicable)
-#       l is 'after'
-#       r is 'before'
-
-# while l and r are not next to each other (r - l > 1)
-#       mid = (l + r) // 2
-#       if is_before(mid):
-#           l = mid
-#       else:
-#           r = mid
-# return r (first 'after')
-# if fetch(r) != target, return -1
-
-# n: the length of the array
-# T: O(log n) - exponential search takes O(log n) to find the valid right boundry, then the binary search take O(log n) to find the target
-# S: O(1) - a constant amount of extra space (for variables) is used regardless of the input size
+# n: length of the array
+# T: O(log n) - log n doublings, then a log n search
+# S: O(1) - a few index variables, nothing stored
 
 def search_in_huge_array(target, fetch):
     def is_before(i):
         val = fetch(i)
-        if val == -1: return False
-        return val < target
-    
-    # check if l is 'after'
-    l = 0
+        return val != -1 and val < target
+
+    k = 1
+    while is_before(k):
+        k *= 2
+
+    l, r = k // 2, k
     if not is_before(l):
-        return 0 if fetch(l) == target else -1
-    
-    # Step 1: get the rightmost boundry (exponential grow r untill it's 'after' or out of bound)
-    r = 1
-    while is_before(r):
-        r *= 2
-    
-    # Step 2: Binary Search
+        return l if fetch(l) == target else -1
+
     while r - l > 1:
         mid = (l + r) // 2
         if is_before(mid):
             l = mid
         else:
             r = mid
-    
-    return r if fetch(r) == target else -1
 
+    return r if fetch(r) == target else -1
 
 
 # # Search in Huge Array

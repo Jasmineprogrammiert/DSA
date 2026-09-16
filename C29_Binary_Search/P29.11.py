@@ -1,33 +1,31 @@
-# Goal: find minimum 'daily_pages' to finish all chapters within 'days'
-#       1 <= daily_pages <= max(page_counts)
+# page_counts = [20, 15, 17, 10], days = 14
 
-# Use transition_point_recipe() to find the transition point, 
-# where 'daily_pages' goes from unable to finish all the pages (too small),
-# to where it can finish the pages (the first 'r' is the answer)
+# 0  1  2  3  4  5  6 ... 20      RATE (pages/day)
+# x  x  x  x  x  o  o ... o       FITS
+#             l
+#                r
 
-# is_before() when 
-# sum(math.ceil(pages in page_counts / daily_pages)) > days
+# binary search on the answer, l, r = 0 (never fits), max(page_counts) (always fits)
+# is_before(rate): days_needed(rate) > days
 
-# n: the number of chapters (len(page_counts))
-# M: the maximum number of pages in any chapter (max(page_counts))
-# T: O(n * log(M)) - O(log M) iteration of binary search is performed, and in each iteration, n chapters are looped
-# S: O(1) - a constant amount of extra space is used regardless of the input size
+# n: number of chapters
+# M: max(page_counts), the size of the answer range
+# T: O(n log M) - log M probes, each an O(n) pass over the chapters
+# S: O(1) - a few counters, nothing stored
 
 import math
 
 def min_pages_per_day(page_counts, days):
-    def days_to_finish(daily_pages):
-        d = 0
+    def days_needed(daily_p):
+        total = 0
         for pages in page_counts:
-            d += math.ceil(pages / daily_pages)
-        return d
-            
-    def is_before(daily_pages):
-        return days_to_finish(daily_pages) > days
+            total += math.ceil(pages / daily_p)
+        return total
 
-    # l, r = 1, max(page_counts)   
-    # The above is WRONG. In the transition point pattern, l and r act as boundaries for two distinct "territories". To guarantee the loop finds the exact boundry, l should ideally start at a value known to be in the 'Before' (false) zone, and r in the 'After' (True) zone
-    l, r = 0, max(page_counts) 
+    def is_before(daily_p):
+        return days_needed(daily_p) > days
+
+    l, r = 0, max(page_counts)
     while r - l > 1:
         mid = (l + r) // 2
         if is_before(mid):
@@ -35,7 +33,6 @@ def min_pages_per_day(page_counts, days):
         else:
             r = mid
     return r
-
 
 
 # # Min Pages Per Day

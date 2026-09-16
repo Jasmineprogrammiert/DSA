@@ -1,29 +1,16 @@
-# use the transition_point_recipe()
-    # define is_before(i): check if arr[i] is part of the decreasing prefix
-        # return true if i == 0 (start of array) or if arr[i] < arr[i - 1] (still decreasing)
-        
-    # initialize pointers
-        # l and r as the first and last values in the range
-    
-    # handle edge case
-        # if the last element is still in the decreasing order, return arr[r] immediately
-        
-    # binary search for transition point: 
-        # while the searching window is larger than 1
-        # find midpoint = (l+r) // 2
-        # if mid is in the decreasing prefix, move l to mid
-        # otherwise move r to m
-    
-    # return arr[l] in the en, the smallest element at the transition from decreasing to increasing
-    
-# n = len(arr)
-# T: O(log n) - binary search repeatedly halves the search range till valley bottom is found
-# S: O(1) - constant extra space is used regardless of input size
+# non-empty, unique elements
+# prefix: decreasing order
+# suffix: increasing order
+# return the smallest value.
+
+# n: length of arr
+# T: O(log n) - each iteration halves the search range, O(1) work per iteration
+# S: O(1) - a fixed number of variables regardless of the size of arr
 
 def valley_bottom(arr):
     def is_before(i):
         return i == 0 or arr[i] < arr[i - 1]
-    
+
     l, r = 0, len(arr) - 1
     if is_before(r):
         return arr[r]
@@ -35,7 +22,6 @@ def valley_bottom(arr):
         else:
             r = mid
     return arr[l]
-
 
 
 # # Valley Bottom

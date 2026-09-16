@@ -1,79 +1,39 @@
-# The key is to find the first and last occurance of target in the sorted array
-# If present, the number of occurance = the index of last - first + 1
-# Then check if this number is multiple of k
+# sorted array of integers
+# the number of occurrences of "target" in arr is a multiple of `k`
 
-# Can run transition_point_recipe() twice, 
-# First time define 'before' as anything < target (r points to the first element not less than the target)
-# Then define 'before' as <= target (l points to the last element less than or equal to the target)
+# target = 2, k = 3
+# 0 1 2 3 4 5 6 7       IDX
+# 1 2 2 2 2 2 2 3       ARR
+#   ^         ^
+#   first     last      count = last - first + 1 = 6 - 1 + 1 = 6
 
-# n: the length of the sorted array
-# T: O(log n) - two separate binary searches are run, O(2*log n) => O(log n)
-# S: O(1)
+# transition_point(is_before): first index where is_before is False
+#   l = rightmost index known True, r = leftmost index known False; they squeeze until adjacent
+#   first = transition_point(arr[i] < target)        False starts at the first target
+#   last  = transition_point(arr[i] <= target) - 1   False starts one past the last target
 
-# transition_point_recipe()
-   # define 'is_before(val)' to return whether val is 'before'
-   # initialize l and r to the first and last values in the range
-   # handle three edge cases:
-       # the range is empty
-       # l is 'after' (the whole range is 'after')
-       # r is 'before' (the whole range is 'before')
-
-   # while l and r are not next to each other (r - l > 1)
-#        mid = (l + r) // 2
-#        if is_before(mid):
-#            l = mid
-#        else:
-#            r = mid
-#    return l (last 'before'), r (first 'after'), or something else,
-#    depending on the problem
+# n: length of arr
+# T: O(log n) - two binary searches, each halves the range per iteration
+# S: O(1) - a fixed number of variables regardless of the size of arr
 
 def target_count_divisible_by_k(arr, target, k):
-    def first_target_index():
-        def is_before(i):
-            return arr[i] < target
-    
+    def transition_point(is_before):    # first index where is_before is False; len(arr) if none
         l, r = 0, len(arr) - 1
-        if arr[l] > target or arr[r] < target:
-            return -1
-        if arr[l] == target:
-            return l   
-        
+        if not is_before(l):
+            return 0
+        if is_before(r):
+            return len(arr)
         while r - l > 1:
             mid = (l + r) // 2
             if is_before(mid):
                 l = mid
             else:
                 r = mid
-        
-        if arr[r] == target:
-            return r
-        return -1
-    
-    def last_target_index():
-        def is_before(i):
-            return arr[i] <= target
-        
-        l, r = 0, len(arr) - 1
-        if arr[r] == target:
-            return r
-        
-        while r - l > 1:
-            mid = (l + r) // 2
-            if is_before(mid):
-                l = mid
-            else:
-                r = mid
-        return l
-    
-    first = first_target_index()
-    if first == -1:
-        return True # 0 is a multiple of any number
-    last = last_target_index()
-    count = last - first + 1
-    return count % k == 0
+        return r
 
-# print(target_count_divisible_by_k([1, 2, 2, 2, 2, 2, 2, 3], 2, 3))
-
+    first = transition_point(lambda i: arr[i] < target)
+    last = transition_point(lambda i: arr[i] <= target) - 1
+    return (last - first + 1) % k == 0
 
 
 # # Target Count Divisible by K
