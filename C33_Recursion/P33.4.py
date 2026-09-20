@@ -1,57 +1,37 @@
-# recurrence: one function with an inner nested function
-# 
-# base case: n = 1, return 1. width(1) = 1
-# Each recursive call returns the blocks used by n-story castle
-# The blocks of n-story castle = 2 * blocks of (n-1) castles + blocks of width
-#   blocks of width = 2 * width of (n-1) castle + 1
-# 
-# Two recurrences to compute:
-#   width(n) - needed to know the top row size
-#   blocks(n) - the answer
-# 
-# n: number of castle stories
-# T: O(n) - each story is computed once 
-# S: O(n) - memo stores n entries, call stack goes n levels deep
+# + 3 7 15      WIDTH
+#   2 3 4       STORY
+
+# An `n`-story castle is made with two `(n-1)`-story castles, side by side, one unit apart, with a row of blocks above them connecting them
+
+# optimal: carry the width up with the block count, one recursion
+# n: number of stories
+# T: O(n) - one chain of n calls, O(1) work each
+# S: O(n) - the call stack
 
 def lego_castle(n):
-    memo = {}
-    
-    def blocks_of_width(n):
-        if n == 1: return 1
-        if n in memo: return memo[n]
-        memo[n] = blocks_of_width(n-1)*2 + 1
-        return memo[n]
-    
-    def blocks_of_castle(n):
-        if n == 1: return 1
-        return blocks_of_castle(n-1)*2 + blocks_of_width(n)
+    if n == 1:
+        return 1
 
-    return blocks_of_castle(n)
+    def rec(story):
+        if story == 1:
+            return 1, 1
+        blocks, width = rec(story - 1)
+        return blocks * 2 + width * 2 + 1, width * 2 + 1
+    return rec(n)[0]
 
-# def lego_castle(n):
-#     memo = {} # every call to lego_castle creates a fresh empty dict
-#     if n == 1: return 1
-    
-#     def blocks_of_width(n):
-#         if n == 1: return 1
-#         if n in memo: return memo[n]
-#         memo[n] = blocks_of_width(n-1)*2 + 1
-#         return memo[n]
-        
-#     return lego_castle(n-1)*2 + blocks_of_width(n)
+# brute force: the width is recomputed from scratch at every story
+# T: O(n^2) - n lego_castle calls, each running an O(n) width_of_castle chain; b = 1, so depth x work, not b^d
+# S: O(n) - lego_castle frames plus width_of_castle frames on top, each at most n
 
-# BRUTE FORCE
-# def lego_castle(n):
-#     if n == 1: return 1
-    
-#     def blocks_of_width(n):
-#         if n == 1: return 1
-#         return blocks_of_width(n-1)*2 + 1
-    
-#     return lego_castle(n-1)*2 + blocks_of_width(n)
+def lego_castle(n):
+    if n == 1:
+        return 1
 
-# print(lego_castle(4))
-
+    def width_of_castle(story):
+        if story == 1:
+            return 1
+        return width_of_castle(story - 1) * 2 + 1
+    return lego_castle(n - 1) * 2 + width_of_castle(n)
 
 
 # # Lego Castle

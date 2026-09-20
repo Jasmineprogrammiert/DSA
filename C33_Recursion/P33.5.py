@@ -1,44 +1,30 @@
-# Array length is a power of 2, find the laminal subarray with the max sum
-# Use recursion to split the array in half and compare sums
-#
-# Recursive func takes a subarray (via indices or slicing):
-#   Compute its sum, track the max
-#   Base case: length == 1 → return (single element)
-#   Find mid, recurse on left half and right half
-# Return the max sum
-# 
-# n: length of array
-# S: O(log n) — recursion depth. The array is halved at each level, so the call stack is log n frames deep
+# laminal arrays = the tree of halves, down to single elements
+# each call returns (best, total) for its piece arr[l:r], half-open: l in, r out
+#   total = left total + right total, no walking
+#   best  = max(left best, right best, total)
+# base case: one element, best and total are both arr[l]
 
-# T: O(n) — by BAD method: b=2, d=log n, A=O(1), so O(2^log₂n * 1) = O(n)
+# 0  1   2  3  4   5  6  7   8     IDX
+# 3, -9, 2, 4, -1, 5, 5, -4        ARR
+# l
+#                            r     one past the end
+#             mid
+
+# n: length of arr
+# T: O(n) - BAD: b = 2, d = log n, A = O(1), so 2^(log n) x 1 = n
+# S: O(log n) - the call stack, one frame per halving
+
 def laminal_arr(arr):
-    def find_max(l, r):
+    def visit(l, r):
         if r - l == 1:
             return arr[l], arr[l]
         mid = (l + r) // 2
-        left_max, left_sum = find_max(l, mid)
-        right_max, right_sum = find_max(mid, r)
-        curr_sum = left_sum + right_sum
-        return max(left_max, right_max, curr_sum), curr_sum
-    return find_max(0, len(arr))[0]
-
-# T: O(n log n) — each of the log n levels sums all n elements
-def laminal_arr(arr):
-    max_val = float('-inf')
-    
-    def find_max(arr):
-        nonlocal max_val
-        s = sum(arr)
-        if s > max_val: max_val = s
-        if len(arr) == 1: return
-        mid = len(arr) // 2
-        find_max(arr[:mid])
-        find_max(arr[mid:])
-    find_max(arr)
-    return max_val
-
-# print(laminal_arr([3, -9, 2, 4, -1, 5, 5, -4]))
-
+        l_best, l_total = visit(l, mid)
+        r_best, r_total = visit(mid, r)
+        total = l_total + r_total
+        best = max(l_best, r_best, total)
+        return best, total
+    return visit(0, len(arr))[0]
 
 
 # # Laminal Arrays

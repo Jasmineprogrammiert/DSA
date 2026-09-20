@@ -1,35 +1,23 @@
-# Given a, p, m, return a^p % m without storing huge numbers
-# Can use a recursion, base case p == 0, return 1
-# Why the formula works:
-#   1. a^p = a * a^(p-1)
-#   2. Apply % m both sides: a^p % m = (a * a^(p-1)) % m
-#   3. Mod property: (a * b) % m = (a * (b % m)) % m
-#   4. So: a^p % m = (a * (a^(p-1) % m)) % m
-#   5. a^(p-1) % m is the same problem with smaller p, that's the recursive call
-# Return (a * recurse(a, p-1, m)) % m
-# Edge case: p = 0
-# 
-# n: p (the exponent)
-# T: O(log p) - each call halves p, so log p calls. O(1) work each
-# S: O(log p) - call stack depth
-def power_mod_m(a, p, m):
-    if p == 0: return 1
-    half = power_mod_m(a, p // 2, m)
-    if p % 2 == 0:
-        return (half * half) % m
-    else:
-        return (a * half * half) % m
+# compute `a^p % m`
+# avoiding storing intermediate values much larger than `m`
+# a = 2, p = 5, m = 100 --> 32
 
-# Brute force: O(p) recursive calls, will stack overflow for large p
-# n: p (the exponent)
-# T: O(p) - p recursive calls, O(1) work each
-# S: O(p) - call stack depth
-def power_mod_m(a, p, m):
-    if p == 0: return 1
-    return (a * power_mod_m(a, p-1, m)) % m
+# 2^5 -> 2 · (2^2)²
+# 2^2 --> (2^1)²
+# 2^1 --> 2
 
-# print(power_mod_m(2, 5, 100))
+# n: p, the exponent
+# T: O(log p) - p halves every call, O(1) work each
+# S: O(log p) - the call stack, one frame per halving
 
+def powers_mod_m(a, p, m):
+    if p == 0:
+        return 1
+    half = powers_mod_m(a, p // 2, m)
+    res = half * half % m
+    if p % 2 == 1:
+        res = a * res % m
+    return res
 
 
 # # Powers Mod M
