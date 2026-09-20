@@ -1,43 +1,45 @@
-# Given a string and custom bracket pairs, check if all brackets are properly nested and matched. Non-bracket characters are ignored
-# 
-# Stack - most recently opened bracket must be closed first (LIFO)
-# 
-# 1. Build a hashmap from brackets: map each closing bracket -> its matching opening bracket
-# Also build a set of all opening brackets. This gives O(1) lookup
-# 2. Iterate s:
-#       open bracket -> push onto stack
-#       close bracket -> check stack is not empty AND stack.pop() matches the expected open bracket. If not, return False
-#       Otherwise -> skip it
-# 3. Return True only if the stack is empty (no unmatched open brackets left)
-# 
-# 5 Edge cases:
-# - closing bracket when stack is empty -> False
-# - leftover open brackets at the end -> False
-# 
+# char not in `brackets` do not affect whether `s` is balanced
+# cannot surround only half of a matching pair of another type of brackets
+# `brackets` does not contain any repeated characters
+
+# opening = {       SET()
+#   (,
+#   [,
+#   {
+# }
+# closing = {       DICT()
+#   ): (,
+#   ]: [,
+#   }: {
+# }
+
+# stack = [
+#    ( )
+# ]
+# s = "((a+b)*[c-d]-{e/f})"
+
 # n: length of s
-# k: length of brackets (k <= 10, constant)
-# T: O(n) - brackets loop takes O(k), s loop takes O(n), so O(n + k)
-# S: O(n) - stack stores at most n open brackets, dict and set each store at most k entries
+# k: length of brackets (k <= 10, so O(1))
+# T: O(n) - one pass over s, O(1) per char; building the set and dict is O(k)
+# S: O(n) - the stack holds every open seen so far, all of s in the worst case; set and dict are O(k)
 
 def custom_brackets(s, brackets):
-    close_to_open = dict()
-    open_set = set()
-    for pair in brackets:
-        close_to_open[pair[1]] = pair[0]
-        open_set.add(pair[0])
-    
+    opening = set()
+    closing = dict()
+    for b in brackets:
+        opening.add(b[0])
+        closing[b[1]] = b[0]
+
     stack = []
-    for c in s:
-        if c in open_set:
-            stack.append(c)
-        elif c in close_to_open:
-            if not stack or stack[-1] != close_to_open[c]:
+    for elem in s:
+        if elem in opening:
+            stack.append(elem)
+        elif elem in closing:
+            if not stack or stack[-1] != closing[elem]:
                 return False
-            stack.pop()
-    return len(stack) == 0
-
-# print(custom_brackets("((a+b)*[c-d]-{e/f})", ["()", "[]", "{}"]))
-
+            else:
+                stack.pop()
+    return not stack
 
 
 # # Custom Brackets

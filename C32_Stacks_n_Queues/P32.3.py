@@ -1,48 +1,33 @@
-# Window of size w, return count of viewer type v in [t - w, t]
-# Dict of { "viewer type": queue[] }, need per-type counts + FIFO removal of expired timestamps
-# join(t, v): append t to queue[v]
-# get_viewers(t, v): pop left while front < t - window, return len
-# Edge: v not in dict, return 0
-# 
-# n: number of join calls
-# T: O(n) - queue operations are O(1), but the while loop could pop up to n items in worst case
-# S: O(n) - the queues store at most n timestamp total
+# tracks the number of viewers within a configurable time window for a live stream event. Viewer types may be "guest", "follower", or "subscriber".
+# each method call receives a time that is greater than or equal to any timestamp used in previous calls to either `join()` or `get_viewers()`.
 
-from collections import deque, defaultdict
+# window = 10
+# timestamps = {
+#     subscriber: [1],
+#     guest: [1],
+#     follower: [2, 2, 2, 3],
+# }
+# get_viewers(13, follower): edge = 13 - 10 = 3, pop the front while < 3 -> [3], count 1
+
+# n: number of join calls
+# T: O(1) amortized per call - each timestamp is appended once and popped at most once
+# S: O(n) - the queues hold at most n timestamps; the dict has at most 3 keys
+
+from collections import defaultdict, deque
 
 class ViewerCounter:
     def __init__(self, window):
         self.window = window
-        self.queue = defaultdict(deque)
-    
+        self.timestamps = defaultdict(deque)
+
     def join(self, time, viewer):
-        self.queue[viewer].append(time)
-    
+        self.timestamps[viewer].append(time)
+
     def get_viewers(self, time, viewer):
-        q = self.queue[viewer]
+        q = self.timestamps[viewer]
         while q and q[0] < time - self.window:
             q.popleft()
         return len(q)
-
-# slightly better
-# class ViewerCounter:
-#     def __init__(self, window):
-#         self.window = window
-#         self.queue = defaultdict(deque)
-    
-#     def _remove_expired(self, time):
-#         for q in self.queue.values():
-#             while q and q[0] < time - self.window:
-#                 q.popleft()
-            
-#     def join(self, time, viewer):
-#         self._remove_expired(time)
-#         self.queue[viewer].append(time)
-    
-#     def get_viewers(self, time, viewer):
-#         self._remove_expired(time)
-#         return len(self.queue[viewer])
-
 
 
 # # Viewer Counter Class
@@ -73,10 +58,3 @@ class ViewerCounter:
 
 # - The number of `join` and `get_viewers` operations is at most `10^5`
 # - `1 ≤ window ≤ 10^5`
-
-
-
-# print(counter.get_viewers(10, "subscriber"))  # Returns 1
-# print(counter.get_viewers(10, "guest"))       # Returns 1
-# print(counter.get_viewers(10, "follower"))    # Returns 4
-# print(counter.get_viewers(13, "follower"))    # Returns 1

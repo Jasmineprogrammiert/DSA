@@ -1,40 +1,38 @@
-# Three actions: go, back and forward, with url or integer
-# Use a stack to store visited URLs
-# Use a pointer (int) to track current position, so as to move back/forward without deleting URLs
-#   go: slice list to pointer + 1, append URL, move the pointer to end
-#   back N: move pointer left by N, clamp at 0
-#   forward N: move pointer right by N, clamp at last index
-# Edge case: go after back -> truncate forward history
-# 
+# use a stack + pointer
+# back: min idx 0
+# go: delete everything after p (del stack[p + 1:]), append url, p = last index
+# forward: max len(stack) - 1
+# return stack[p]
+
+# 0  1  2          IDX
+# go ne            URL
+#    p             POINTER
+
+# Example: actions = [["go", "google.com"],
+#                     ["go", "wikipedia.com"],
+#                     ["back", 1],
+#                     ["forward", 1],
+#                     ["back", 3],
+#                     ["go", "netflix.com"],
+#                     ["forward", 3]]
+
 # n: length of actions
-# T: O(n^2) - loop takes O(n), slice/ append is O(n) per go (worst)
-# S: O(n) - stack stores at most n URLs
+# T: O(n) - one pass; each del is O(pages removed), but a page is appended once and removed at most once, so all dels together are O(n)
+# S: O(n) - history holds at most n URLs when every action is a go
 
 def curr_url_with_forward(actions):
-    stack = []
-    pointer = 0
-    
-    for action, val in actions:
+    history = []
+    p = 0
+    for action, url_or_int in actions:
         if action == "go":
-            stack = stack[:pointer + 1]
-            stack.append(val)
-            pointer = len(stack) - 1
+            del history[p + 1:]
+            history.append(url_or_int)
+            p = len(history) - 1
         elif action == "back":
-            pointer = max(pointer - val, 0)
+            p = max(0, p - url_or_int)
         else:
-            pointer = min(pointer + val, len(stack) - 1)
-    return stack[pointer]
-
-# print(curr_url_with_forward([
-#     ["go", "google.com"],
-#     ["go", "wikipedia.com"],
-#     ["back", 1],
-#     ["forward", 1],
-#     ["back", 3],
-#     ["go", "netflix.com"],
-#     ["forward", 3]
-# ]))
-
+            p = min(len(history) - 1, p + url_or_int)
+    return history[p]
 
 
 # # Current URL With Forward

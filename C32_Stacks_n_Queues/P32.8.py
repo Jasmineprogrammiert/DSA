@@ -1,30 +1,33 @@
-# Stack of indices to track unmatched parentheses
-# For each char:
-#   If ')' and s[stack top] == '(' -> pop (matched)
-#   Otherwise, push index
-# Build result by skipping indices left in stack
-# 
+# delete the smallest number of characters necessary to make `s` balanced
+# return the resulting string
+#
+# There may be more than one valid answer
+
+# 0 1 2 3 4 5 6 7 8
+# ) ) ( ( ) ) ( ( )
+#                 p
+#     ^ ^ ^ ^   ^ ^     PAIRS
+
+# stack = [0 1 6]  <-- the indices to delete
+
 # n: length of s
-# T: O(n) - s iteration happens twice, each time takes O(n)
-# S: O(n) - stack or remove has at most n entries
+# T: O(n) - two passes over s, O(1) per char (stack push / pop, set lookup); the final join is O(n) once
+# S: O(n) - stack, set and res each hold at most n entries
 
 def longest_balanced_subsequence(s):
     stack = []
-    for idx, char in enumerate(s):
-        if char == ")" and stack and s[stack[-1]] == "(":
+    for idx, elem in enumerate(s):
+        if elem == ")" and stack and s[stack[-1]] == "(":
             stack.pop()
         else:
             stack.append(idx)
-    
-    res = []   
-    remove = set(stack)
-    for idx, char in enumerate(s):
-        if idx not in remove:
-            res.append(char)
+
+    res = []
+    stack_set = set(stack)
+    for idx, elem in enumerate(s):
+        if idx not in stack_set:
+            res.append(elem)
     return ''.join(res)
-
-# print(longest_balanced_subsequence("))(())(()"))
-
 
 
 # # Longest Balanced Subsequence
