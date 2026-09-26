@@ -1,12 +1,6 @@
-# Goal: find the k-th smallest value (0-indexed) in a BST
-#   in-order traversal visits a BST's values in sorted order
-#   - walk in-order, counting nodes as they're visited (global state)
-#   - when the count reaches k, the current node is the answer
-#   - record it and stop traversing early
-#
-# n: number of nodes, h: height of tree, k: target index (0-based)
-# T: O(h + k) - descend the left spine to the min (h), then step k more
-# S: O(h) - recursion stack
+# n: number of nodes; h: height of the tree
+# T: O(n) worst case - each node is visited at most once
+# S: O(h) - the recursion stack follows one root-to-leaf path
 
 def bst_kth(node, k):
     count = 0
@@ -14,13 +8,13 @@ def bst_kth(node, k):
 
     def inorder(node):
         nonlocal count, res
-        if not node:
-            return None
+        if not node or res is not None:
+            return
+
         inorder(node.left)
-        count += 1
         if count == k:
             res = node.val
-            return
+        count += 1
         inorder(node.right)
 
     inorder(node)

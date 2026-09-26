@@ -1,13 +1,9 @@
-# Goal: is this binary tree a valid BST?
-#   carry an allowed window [low, high] down the recursion (inclusive: <= / >=)
-#   - node.val outside [low, high] -> False
-#   - go left  -> [low, node.val]   (tighten ceiling)
-#   - go right -> [node.val, high]  (tighten floor)
-#   - None -> True
-#
-# n: number of nodes, h: height of tree
-# T: O(n) - each node is visited exactly once
-# S: O(h) - recursion stack (O(1) extra if iterative)
+# - All the values on its **left** subtree <= node.val
+# - All the values on its **right** subtree >= node.val
+
+# n: number of nodes; h: height of the tree
+# T: O(n) worst case - each node is checked at most once
+# S: O(h) - maximum recursion depth; O(n) for a chain
 
 def bst_validation(node, low=float('-inf'), high=float('inf')):
     if not node:

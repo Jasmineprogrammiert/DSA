@@ -1,33 +1,36 @@
-# N-ary expression tree: leaves are numbers, internal nodes are operations
-#   Down:   none
-#   Up:     evaluated value of this node
-#   Global: none
-#
-#   evaluate(node) -> number
-#     if num: return node.num
-#     else: evaluate all children, apply operation (sum/product/max/min)
-#
-# n: number of nodes, h: height of tree
-# T: O(n) - each node visited once
-# S: O(h) - recursion
+# The node definition has three fields: `kind`, `num`, and `children`.
+
+# - `kind`: the node's type.
+#       'Number' nodes, which have `kind = "num"`
+#       'Operation' nodes, one of `"sum"`, `"product"`, `"max"`, or `"min"`
+
+# - `num`: only valid for 'Number' nodes. It stores an integer value
+# - `children`: only valid for 'Operation' nodes. It stores a list of child nodes (there are no null children)
+
+# - The value of a 'Number' node is its `num` field.
+# - The value of an 'Operation' node depends on its `kind`: it is the sum, product, max, or min of the children's values (the product of a single value is itself).
+
+# n: number of nodes, h: height of the tree
+# T: O(n) - each node is visited once, O(1) work per child
+# S: O(n) - the values lists hold n - 1 entries in total; the call stack is O(h) on top
 
 def evaluate(node):
-    if node.kind == 'num':
+    if node.kind == "num":
         return node.num
-    child_res = []
+    values = []
     for child in node.children:
-        child_res.append(evaluate(child))
-    if node.kind == 'sum':
-        return sum(child_res)
-    elif node.kind == 'max':
-        return max(child_res)
-    elif node.kind == 'min':
-        return min(child_res)
-    elif node.kind == 'product':
-        res = 1
-        for v in child_res:
-            res *= v
-        return res
+        values.append(evaluate(child))
+    if node.kind == "sum":
+        return sum(values)
+    elif node.kind == "max":
+        return max(values)
+    elif node.kind == "min":
+        return min(values)
+    else:
+        base = 1
+        for val in values:
+            base *= val
+        return base
 
 
 # # Evaluate Expression Tree

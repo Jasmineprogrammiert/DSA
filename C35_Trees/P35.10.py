@@ -1,50 +1,28 @@
-# Zig-zag order = level-order, but flip every odd level left-to-right -> right-to-left
-# 1. BFS one full level at a time (for _ in range(len(queue))), so each while pass = one level
-# 2. Collect that level's values into `level`
-# 3. Keep a `flipped` flag; reverse `level` before extending res on flipped levels, then toggle it
-# 4. Return res
-#
-# n: number of nodes
-# T: O(n) — each node is enqueued/dequeued once; reversing each level sums to O(n) overall
-# S: O(n) — the queue holds up to a full level (~n/2 nodes)
+# even: left -> right
+# odd: right -> left
 
-# Level-by-level (BFS) recipe:
-# from collections import deque
-# def level_order(root):
-#     queue = deque()
-#     queue.append((root, 0))
-#     while queue:
-#         level_size = len(queue)     # queue == exactly one level
-#         for _ in range(level_size): # peel off that whole level
-#             node, depth = queue.popleft()
-#             # Do something with node and depth
-#             if node.left:
-#                 queue.append((node.left, depth + 1))
-#             if node.right:
-#                 queue.append((node.right, depth + 1))
-#         # Do something with the WHOLE level (size = level_size)
+# n: number of nodes
+# T: O(n) - each node is enqueued and dequeued once; the reverses sum to n across all rows
+# S: O(n) - res is the output; auxiliary is the queue, one level at a time, up to n / 2
 
 from collections import deque
 
-
 def zig_zag_order(root):
-    if not root:
-        return []
-    queue = deque()
-    queue.append(root)
     res = []
-    flipped = False
+    queue = deque([root]) if root else deque()
+    depth = 0
     while queue:
-        level = []
-        for _ in range(len(queue)):
+        level_size = len(queue)
+        row = []
+        for _ in range(level_size):
             node = queue.popleft()
-            level.append(node.val)
+            row.append(node.val)
             if node.left:
                 queue.append(node.left)
             if node.right:
                 queue.append(node.right)
-        res.extend(reversed(level) if flipped else level)
-        flipped = not flipped
+        res.extend(reversed(row) if depth % 2 == 1 else row)
+        depth += 1
     return res
 
 
