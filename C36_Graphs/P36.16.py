@@ -1,32 +1,57 @@
-# Graph: node = piece, edge = gap between two rectangles <= d
-#   -> is piece n-1 reachable from piece 0? (BFS)
-# reachable(a, b): per-axis gap via max(0, ...); jumpable if sqrt(dx^2 + dy^2) <= d
-# Edge cases: single piece (0 is also last), overlap/touch -> gap 0
-#
+# Jump if the closest points on two pieces are at most d apart.
+# [x_min, y_min, x_max, y_max]: x uses indices 0, 2; y uses 1, 3.
+# For each axis, the gap is 0 if the ranges overlap; compare dx*dx + dy*dy to d*d.
+
+# furniture = [                 d = 5
+#   [1, 1, 9, 5],
+#   [12, 9, 20, 13],
+#   [16, 2, 22, 7],
+#   [24, 9, 26, 11],
+#   [29, 1, 31, 5]
+# ]
+# --> True
+
+# piece popped   newly reachable   queue after   seen after
+# start          -                 [0]           {0}
+# 0              1                 [1]           {0, 1}
+# 1              2, 3              [2, 3]        {0, 1, 2, 3}
+# 2              none              [3]           {0, 1, 2, 3}
+# 3              4                 [4]           {0, 1, 2, 3, 4}
+# 4              destination       -             return True
+
 # n: number of furniture pieces
-# T: O(n^2)- each piece pops once, then scans all n pieces as neighbors
-# S: O(n) - visited set + BFS queue
+# T: O(n^2) - each piece is explored once; each exploration checks up to n pieces
+# S: O(n) - the visited set and queue each hold at most n piece indices
 
 from collections import deque
 
+def is_lava(furniture, d):
+    def can_jump(a, b):
+        if a[2] < b[0]:
+            dx = b[0] - a[2]
+        elif b[2] < a[0]:
+            dx = a[0] - b[2]
+        else:
+            dx = 0
 
-def lava(furniture, d):
-    n = len(furniture)
+        if a[1] > b[3]:
+            dy = a[1] - b[3]
+        elif b[1] > a[3]:
+            dy = b[1] - a[3]
+        else:
+            dy = 0
 
-    def reachable(a, b):
-        dx = max(0, b[0] - a[2], a[0] - b[2])
-        dy = max(0, b[1] - a[3], a[1] - b[3])
-        return (dx * dx + dy * dy) ** 0.5 <= d
+        return dx * dx + dy * dy <= d * d
 
-    visited = {0}
     queue = deque([0])
+    visited = {0}
+    n = len(furniture)
     while queue:
         piece = queue.popleft()
         if piece == n - 1:
             return True
         for nbr in range(n):
-            if (nbr not in visited and 
-                reachable(furniture[piece], furniture[nbr])):
+            if nbr not in visited and can_jump(furniture[piece], furniture[nbr]):
                 visited.add(nbr)
                 queue.append(nbr)
     return False

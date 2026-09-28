@@ -1,28 +1,33 @@
-# 1. Multi-source BFS: seed the queue with every infected node at day 0
-# 2. Pop a node, infect its unvisited neighbors -> their day = current + 1
-# 3. Answer is the largest day handed out (the last node to fall)
+# infected = [0]
+# graph = [
+#   [1, 2],       # Node 0
+#   [0, 2],       # Node 1
+#   [0, 1, 3],    # Node 2
+#   [2]           # Node 3
+# ]
 
-# n: nodes (V)
-# m: edges (E)
-# T: O(V + E) - each node enqueued once, each edge scanned once
-# S: O(V) - queue + visited set
+# days = 0
+# queue = [0]
+# dist = {0: 0}
+
+# V: number of nodes; E: number of edges
+# T: O(V + E) - each node is processed once and all edges are scanned
+# S: O(V) - the queue and infection-day map each hold at most V entries
 
 from collections import deque
 
-
-def all_infected(graph, infected):  # Multi-source BFS
+def all_infected(graph, infected):
     days = 0
     queue = deque(infected)
-    distances = {node: 0 for node in infected}
+    dist = {node: 0 for node in infected}
 
     while queue:
         node = queue.popleft()
         for nbr in graph[node]:
-            if nbr not in distances:
-                distances[nbr] = distances[node] + 1
-                days = max(days, distances[nbr])
+            if nbr not in dist:
+                dist[nbr] = dist[node] + 1
+                days = max(days, dist[nbr])
                 queue.append(nbr)
-
     return days
 
 

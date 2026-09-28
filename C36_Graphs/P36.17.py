@@ -1,28 +1,35 @@
-# Reach w2 from w1: each move adds/removes one letter, ops alternate, no repeats.
-#
-# 1. Reachability -> BFS from w1.
-# 2. Legality depends on the last op, so a node is (word, last_op), not just word.
-# 3. Neighbor = one-edit add/remove: lengths differ by 1, 
-# longer == shorter + one extra char (two pointers, allow <= 1 mismatch).
-# 4. Move valid if op != last_op (first move: either) and (word, op) unvisited.
-#
-# w: number of words, L: max word length
-# T: O(w^2 * L) - O(w) states, each scans all w words with an O(L) neighbor check
-# S: O(w) - visited set + queue hold the (word, op) states
+# word1 = "leap"
+# word2 = "hop"
+# words = [
+#    "fare", "hug", "car", "vibes", "once", "sop", "far", "ounce", "slap",
+#     "sap", "cart", "hung", "art", "shop", "fart", "lap", "soap", "are",
+#    "hop", "care", "leap", "bounce", "beyond", "cracking"
+# ]
+
+# is_neighbor("leap", "lap"): skip e, then the rest matches
+# 0  1  2  3     IDX
+# l  e  a  p     w1
+# l  -  a  p     w2 (- = skipped)
+# start = ("leap", None)
+# after leap -> lap: seen = {("leap", None), ("lap", "remove")}
+# queue = [("lap", "remove")]
+
+# n: number of words; L: maximum word length
+# T: O(n^2 * L) - O(n) states; each scans n words with an O(L) neighbor check
+# S: O(n) - seen and queue hold up to 2n + 1 (word, operation) states
 
 from collections import deque
 
-
-def word_ladder_game(w1, w2, words):
+def game_var(w1, w2, words):
     def is_neighbor(w1, w2):
         if abs(len(w1) - len(w2)) != 1:
             return False
         longer, shorter = (w1, w2) if len(w1) > len(w2) else (w2, w1)
-        p1, p2, count = 0, 0, 0
+        p1, p2, skips = 0, 0, 0
         while p1 < len(longer) and p2 < len(shorter):
             if longer[p1] != shorter[p2]:
-                count += 1
-                if count > 1:
+                skips += 1
+                if skips > 1:
                     return False
             else:
                 p2 += 1
@@ -30,7 +37,7 @@ def word_ladder_game(w1, w2, words):
         return True
 
     start = (w1, None)
-    visited = {start}
+    seen = {start}
     queue = deque([start])
     while queue:
         word, last_op = queue.popleft()
@@ -39,11 +46,11 @@ def word_ladder_game(w1, w2, words):
         for nbr in words:
             if is_neighbor(word, nbr):
                 op = "add" if len(nbr) > len(word) else "remove"
-                node = (nbr, op)
-                if ((last_op is None or op != last_op) and 
-                    node not in visited):
-                    visited.add(node)
-                    queue.append(node)
+                if last_op is None or op != last_op:
+                    nxt = (nbr, op)
+                    if nxt not in seen:
+                        seen.add(nxt)
+                        queue.append(nxt)
     return False
 
 

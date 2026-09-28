@@ -1,43 +1,42 @@
-# Approach: label every node with its node_to_cc-component id, then compare labels
-#   one DFS pass over the graph -> stamp each node with a component id
-#   each query [a, b] -> True iff label[a] == label[b]
-#
-# V: number of nodes
-# E: number of edges
-# k: number of queries
-# T: O(V + E + k) - one DFS pass visits each node and scans each edge once, then O(1) per query
-# S: O(V) - label map plus recursion stack depth
-#
-# Trace (Example 1) - two components: {0,1,2,4,5}=0 and {3}=1
-#   node :  0   1   2   3   4   5
-#   label:  0   0   0   1   0   0
-#   [0, 4] -> 0 == 0 -> True
-#   [0, 3] -> 0 == 1 -> False
+# Return a boolean array of length `k` where the `i`-th element indicates if the nodes in `queries[i]` are in the same node_to_cc
 
-def reachability(graph, queries):
-    node_to_cc = {}
+# node_to_cc: a max set of nodes that are all reachable from each other
 
-    def visit(node, cc_id):
-        node_to_cc[node] = cc_id
+# 0 1 2 3 4 5       IDX
+# 0 1 2 3 4 5       NODE
+# 0 0 0 1 0 0       GROUP_ID
+
+# V: number of nodes; E: number of edges; Q: number of queries
+# T: O(V + E + Q) - DFS visits all nodes and scans all edges; each query takes O(1)
+# S: O(V + Q) - labels and call stack use O(V); the output list uses O(Q)
+
+def reachability_queries(graph, queries):
+    seen = {}
+
+    def visit(node, group_id):
+        seen[node] = group_id
         for nbr in graph[node]:
-            if nbr not in node_to_cc:
-                visit(nbr, cc_id)
+            if nbr not in seen:
+                visit(nbr, group_id)
 
-    cc_id = 0
+    group_id = 0
     for node in range(len(graph)):
-        if node not in node_to_cc:
-            visit(node, cc_id)
-            cc_id += 1
+        if node not in seen:
+            visit(node, group_id)
+            group_id += 1
 
-    return [node_to_cc[a] == node_to_cc[b] for a, b in queries]
+    res = []
+    for a, b in queries:
+        res.append(seen[a] == seen[b])
+    return res
 
 
 # # Reachability Queries
 
 # You are given the adjacency list of an undirected graph, `graph`, as well as an array, `queries`, of length `k`, where `queries[i]` is a pair of node indices.
-# Return a boolean array of length `k` where the `i`-th element indicates if the nodes in `queries[i]` are in the same node_to_cc component.
+# Return a boolean array of length `k` where the `i`-th element indicates if the nodes in `queries[i]` are in the same connected component.
 
-# A _node_to_cc component_ is a maximal set of nodes that are all reachable from each other.
+# A _connected component_ is a maximal set of nodes that are all reachable from each other.
 
 # Example 1
 # graph = [
@@ -62,7 +61,7 @@ def reachability(graph, queries):
 # queries = [[0, 2], [0, 1]]
 
 # Output: [True, True]
-# All nodes are in the same node_to_cc component.
+# All nodes are in the same connected component.
 
 # Example 3:
 # graph = [
@@ -74,7 +73,7 @@ def reachability(graph, queries):
 # queries = [[0, 1], [0, 2], [2, 3]]
 
 # Output: [True, False, True]
-# The graph has two node_to_cc components: {0, 1} and {2, 3}.
+# The graph has two connected components: {0, 1} and {2, 3}.
 
 # Graph from Example 1:
 
