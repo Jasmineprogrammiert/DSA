@@ -1,47 +1,49 @@
-# heap: spend the most-loaded artist first, never the same one back-to-back
-#
-#   count songs per artist -> max-heap keyed on remaining count
-#   each round:
-#     pop top artist -> append one song -> decrement their count
-#     push prev (last round's artist) back in -> their wait is up
-#     still has songs? -> they become prev for next round
-#   placed fewer than n songs -> impossible -> return []
-#
-# n: number of songs
-# k: number of artists
-# T: O(n * log k) - n placements, each a heap pop + push of O(log k)
-# S: O(n) - artist_to_titles holds all n titles; heap/res bounded by O(k)/O(n), and k <= n
-#
 # TODO (revisit): O(n) no-heap alternative - place the most-frequent artist's
 #   songs into even indices 0,2,4,... first, then fill the rest. Same artist
 #   always lands >=2 apart, so never adjacent. Drops the log k factor.
 
-import heapq
-from collections import defaultdict
+# artist_songs = {
+#     "artist1": ["song1", "song2"],
+#     "artist2": ["song3", "song4", "song5"],
+# }
+# heap = [(-3, "artist2"), (-2, "artist1")]
+# prev = None
 
+# n: number of songs; k: number of distinct artists
+# T: O(n log k) - group n songs, seed with k pushes, then up to n heap rounds; O(n) if k <= 1
+# S: O(n) - artist_songs stores n titles, res holds up to n titles, heap holds up to k entries
+
+from collections import defaultdict
+import heapq
 
 def make_playlist(songs):
-    artist_to_titles = defaultdict(list)
+    artist_songs = defaultdict(list)
     for title, artist in songs:
-        artist_to_titles[artist].append(title)
+        artist_songs[artist].append(title)
 
-    heap = [(-len(titles), artist) for artist, titles in artist_to_titles.items()]
-    heapq.heapify(heap)
+    heap = []
+    for artist, s in artist_songs.items():
+        heapq.heappush(heap, (-len(s), artist))
 
-    res = []
     prev = None
+    res = []
     while heap:
         neg_count, artist = heapq.heappop(heap)
-        res.append(artist_to_titles[artist].pop())
+        res.append(artist_songs[artist].pop())
         neg_count += 1
 
         if prev is not None:
             heapq.heappush(heap, prev)
-        prev = (neg_count, artist) if neg_count < 0 else None
 
-    if len(res) < len(songs):
+        if neg_count < 0:
+            prev = neg_count, artist
+        else:
+            prev = None
+
+    if len(res) == len(songs):
+        return res
+    else:
         return []
-    return res
 
 
 # # Make Playlist

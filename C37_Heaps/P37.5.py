@@ -1,46 +1,30 @@
-# Data Structures:
-#       dict title->plays (lookup)
-#       lower = max-heap, upper = min-heap (median)
-# Invariants:
-#       max(lower) <= min(upper)
-#       len(lower) == len(upper) [+1 odd extra in lower]
-#
-# register_plays(title, plays):
-#     plays[title] = plays
-#     push plays -> lower
-#     move lower's max -> upper        # keep ordering
-#     if len(upper) > len(lower):
-#         move upper's min -> lower    # keep sizes
-#
-# is_popular(title):
-#     median = avg(lower top, upper top) if equal size else lower top
-#     return plays[title] > median
-#
-# Median sits at the boundary between the two halves:
-#    lower half          |          upper half
-#    132   140   193     |     223   274   291
-#                 ^             ^
-#             -lower[0]      upper[0]
-#         (largest of low)   (smallest of up)
+# dict = { title: plays }
+# lower = [] <-- max-heap via negative counts; equal size to upper or one extra
+# upper = [] <-- min-heap via positive counts
+# median
 
 # n: number of registered songs
-# T: register O(log n), is_popular O(1) - heap push/pop is log n; median is two heap-top reads
-# S: O(n) - dict + two heaps each hold all n songs
+# T: O(log n) per registration/query pair - register_plays is O(log n); is_popular is O(1) average
+# S: O(n) - dictionary stores n songs; the two heaps together store n counts
 
 import heapq
-
 
 class PopularSongs:
     def __init__(self):
         self.plays = {}
-        self.lower = []  # max-heap (values negated): smaller half
-        self.upper = []  # min-heap: larger half
+        self.lower = []
+        self.upper = []
 
     def register_plays(self, title, plays):
         self.plays[title] = plays
-        heapq.heappush(self.lower, -plays)
-        heapq.heappush(self.upper, -heapq.heappop(self.lower))
-        if len(self.upper) > len(self.lower):
+        if not self.lower or plays <= -self.lower[0]:
+            heapq.heappush(self.lower, -plays)
+        else:
+            heapq.heappush(self.upper, plays)
+
+        if len(self.lower) > len(self.upper) + 1:
+            heapq.heappush(self.upper, -heapq.heappop(self.lower))
+        elif len(self.upper) > len(self.lower):
             heapq.heappush(self.lower, -heapq.heappop(self.upper))
 
     def is_popular(self, title):

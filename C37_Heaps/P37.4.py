@@ -1,27 +1,26 @@
-# Goal: track top-k by cumulative plays, registers can update an existing song
-#   dict of running totals, rank only on read
-#   -> register O(1), top_k O(n log k) via nlargest
-
-# n: songs registered so far
-# k: number requested (k << n)
-# register_plays T: O(1) - one dict get + assignment
-# top_k T: O(n log k) - nlargest scans all n totals, keeping a size-k heap
-# S: O(n) - dict of totals; top_k heap/output is O(k)
+# n: number of registered songs; k: number requested
+# T: O(n log k) per registration/query pair - register_plays is O(1) average; top_k scans n songs with O(log k) heap operations (O(n) if k = 1)
+# S: O(n) overall - the dictionary stores n totals; top_k uses O(k) extra space for heap and output
 
 import heapq
-
+from collections import defaultdict
 
 class TopSongs:
     def __init__(self, k):
+        self.plays = defaultdict(int)
         self.k = k
-        self.plays = {}
 
     def register_plays(self, title, plays):
-        self.plays[title] = self.plays.get(title, 0) + plays
-
+        self.plays[title] += plays
+    
     def top_k(self):
-        # heapq.nlargest(n, iterable, key=None)
-        return heapq.nlargest(self.k, self.plays, key=self.plays.get)
+        heap = []
+        for title, plays in self.plays.items():
+            if len(heap) < self.k:
+                heapq.heappush(heap, (plays, title))
+            elif heap[0][0] < plays:
+                heapq.heapreplace(heap, (plays, title))
+        return [title for plays, title in heap]
 
 
 # # Top Songs Class With Updates
