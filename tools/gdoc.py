@@ -12,7 +12,8 @@ fails even though auth succeeds.
     tools/gdoc.py batch <docId> <file>    apply a documents.batchUpdate payload
 
 Sheets live in tools/gsheet.py and share this file's auth, so the scope below
-covers both APIs; re-run `auth` after changing it.
+covers Docs, Sheets and Drive metadata (listing and renaming files); re-run
+`auth` after changing it.
 
 Credentials live in ~/.config/gdoc/credentials.json (mode 600), outside the
 repo -- client id, client secret and refresh token alike, so nothing
@@ -34,7 +35,11 @@ import urllib.request
 import webbrowser
 from getpass import getpass
 
-SCOPE = "https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/spreadsheets"
+SCOPE = (
+    "https://www.googleapis.com/auth/documents "
+    "https://www.googleapis.com/auth/spreadsheets "
+    "https://www.googleapis.com/auth/drive.metadata"
+)
 AUTH_URI = "https://accounts.google.com/o/oauth2/v2/auth"
 TOKEN_URI = "https://oauth2.googleapis.com/token"
 DOCS_API = "https://docs.googleapis.com/v1/documents"
