@@ -1,9 +1,9 @@
 #!/bin/zsh
 #
-# timer — 20-minute countdown, then a count-up of the overtime
+# timer — 30-minute countdown, then a count-up of the overtime
 #
-#   timer         20 minutes (default)
-#   timer 30      30 minutes, for a full mock with a spoken walkthrough
+#   timer         30 minutes (default)
+#   timer 45      45 minutes, for a longer mock
 #
 # The four phases scale to whatever total you give, keeping the same
 # proportions as the 30-minute plan: 0-8 / 8-12 / 12-25 / 25-30.
@@ -15,14 +15,14 @@
 #
 # At zero it rolls straight into a count-up on the same line, with no
 # break: the clock restarts at 00:00 and climbs, the bar refilling once
-# per full interval (20 -> 20+1, 20+2, ...). The bar snapping from full
+# per full interval (30 -> 30+1, 30+2, ...). The bar snapping from full
 # back to empty is the only sign you crossed. That climbing number is
 # how far off pace you were; it belongs in the post-mortem.
 
 emulate -L zsh
 setopt no_notify no_monitor
 
-arg=${1:-20}
+arg=${1:-30}
 case $arg in
   <->m|<->) total=$(( ${arg%m} * 60 )) ;;
   *)        print -u2 "usage: timer [minutes]"; exit 1 ;;
