@@ -1,24 +1,35 @@
-# brute force: for each cell, sum all elements in its subgrid
-# resulting in a time complexity of O((R*C)^2)
-# Optimized: calculate the sums starting from the bottom-right corner, 
-# reusing the sums of the cells below and to the right of the current cell 
-# T: O(R*C) - each cell is iterated once
-# S: O(R*C) - output grid of the same size as input
+# 1 2       GRID
+# 3 4
+
+# 0 6       RES
+# 7 4
+
+# 2         R
+# 2         C
+# 0         r
+# 1         c
+
+# for r in range(1, -1, -1):
+#     for c in range(1, -1, -1):
+
+# Start bottom-right: below and right sums are ready; subtract their diagonal overlap
+# R, C: number of rows and columns
+# T: O(R * C) - one visit per cell, O(1) work each
+# S: O(R * C) - output grid; O(1) auxiliary space
 
 def subgrid_sums(grid):
     R, C = len(grid), len(grid[0])
     res = [row.copy() for row in grid]
-    
-    for r in range(R-1, -1, -1):
-        for c in range(C-1, -1, -1):
-            if r + 1 < R:
-                res[r][c] += res[r+1][c]
-            if c + 1 < C:
-                res[r][c] += res[r][c+1]
-            if r + 1 < R and c + 1 < C:
-                res[r][c] -= res[r+1][c+1] # value of the diagonal cell is calculated twice
-    return res
 
+    for r in range(R - 1, -1, -1):
+        for c in range(C - 1, -1, -1):
+            if r + 1 < R:
+                res[r][c] += res[r + 1][c]
+            if c + 1 < C:
+                res[r][c] += res[r][c + 1]
+            if r + 1 < R and c + 1 < C:
+                res[r][c] -= res[r + 1][c + 1]
+    return res
 
 
 # # Subgrid Sums

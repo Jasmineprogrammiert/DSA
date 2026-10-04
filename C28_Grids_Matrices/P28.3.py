@@ -1,42 +1,49 @@
-# Create a n*n grid initialized with 0
-# Fill from the end (n-1, n-1) instead of center (easier to turn direction)
-# with the highest value n*n - 1
-# Defind four directions: up, left, donw, right
-    # [[-1, 0], [0, -1], [1, 0], [0, 1]]
-# Use a loop that decrements the highest val to 0
-# Track current location grid[r][c] and direction index dir
+# n = 3
+# Output: [[4, 5, 6],
+#          [3, 0, 7],
+#          [2, 1, 8]]
 
-# Before filling, check if the next cell is valid (not out of bound and unfilled)
-# Turns clockwise by (i + 1) % n 
-# Move to the next cell:
-    # new_r = r + directions[dir][0]
-    # new_l = l + directions[dir][1]
+# 0 0 6     RES
+# 0 0 7
+# 0 0 8
 
-# n: length of grid
-# T: O(n^2) - (n^n - 1) iterations
-# S: O(n^2) - a new grid with size n^n is created
+# val = 6
+# dir_idx = 0
 
+# r, c = 0, 2
+# dr, dc = -1, 0
+# nxt_r, nxt_c = -1, 2
 
-# (i + 1) % n returns the next index in a circular sequence of length n, wrapping back to 0 after reaching n - 1. This is commonly used to cycle through elements in arrays where the end wraps around beginning
+# n: number of rows and columns
+# T: O(n^2) - initialize n * n cells, then n * n - 1 iterations with O(1) operations each
+# S: O(n^2) - res stores n * n cells; auxiliary variables take O(1)
 
-def Spiral_Order(n):
-    def is_valid(grid, r, c):
-        return 0 <= r < len(grid) and 0 <= c < len(grid) and grid[r][c] == 0
-    
-    grid = [[0] * n for _ in range(n)]
+def spiral_order(n):
+    res = [[0] * n for _ in range(n)]
     val = n * n - 1
     r = c = n - 1
-    directions = [[-1, 0], [0, -1], [1, 0], [0, 1]]
-    dir = 0
-    
-    while val > 0:
-        grid[r][c] = val
-        val -= 1
-        if not is_valid(grid, r + directions[dir][0], c + directions[dir][1]):
-            dir = (dir + 1) % 4
-        r, c = r + directions[dir][0], c + directions[dir][1]
-    return grid
+    directions = [(-1, 0), (0, -1), (1, 0), (0, 1)]
+    dir_idx = 0
+    res[r][c] = val
 
+    while val > 0:
+        dr, dc = directions[dir_idx]
+        nxt_r, nxt_c = r + dr, c + dc
+
+        if not (
+            0 <= nxt_r < n
+            and 0 <= nxt_c < n
+            and res[nxt_r][nxt_c] == 0
+        ):
+            dir_idx = (dir_idx + 1) % 4
+            dr, dc = directions[dir_idx]
+            nxt_r, nxt_c = r + dr, c + dc
+
+        val -= 1
+        res[nxt_r][nxt_c] = val
+        r, c = nxt_r, nxt_c
+
+    return res
 
 
 # # Spiral Order
