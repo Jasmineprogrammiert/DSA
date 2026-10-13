@@ -1,42 +1,36 @@
-# Count DISTINCT sum-0 submultisets -> group into {number: count}, then per distinct number pick
-#   how many copies to take (k = 0..count). Choosing quantities, not positions, builds no duplicate.
-#   Count is an UP quantity: visit() returns its subtree's sum-0 leaf count, parents sum children.
-#
-# Tree for S = [1, 1, -1, -1]  ->  values = [(1, 2), (-1, 2)]. Pick #1s, then #(-1)s; sum = #1s - #(-1)s:
-#
-#   0 ones ─┬─ 0 neg → {}            0  *
-#           ├─ 1 neg → {-1}         -1
-#           └─ 2 neg → {-1,-1}      -2
-#   1 one  ─┬─ 0 neg → {1}           1
-#           ├─ 1 neg → {1,-1}        0  *
-#           └─ 2 neg → {1,-1,-1}    -1
-#   2 ones ─┬─ 0 neg → {1,1}         2
-#           ├─ 1 neg → {1,1,-1}      1
-#           └─ 2 neg → {1,1,-1,-1}   0  *
-#
-#   3 x 3 = 9 submultisets (one per leaf, no duplicates); 3 sum to 0 (*) -> answer 3.
-#
-# n: length of S
-# T: O(2^n) — worst case all-distinct (branch 2, depth n); duplicates only shrink the tree
-# S: O(n) — call stack depth + frequency map
+# multiset: a set that allows repeated elements
+# submultiset: removing any number of elements from multiset
+# Return the number of unique submultisets with sum `0`, ignoring position
 
-from collections import Counter
+#       0         1         2       COPIES OF 1
+#    0  1  2   0  1  2   0  1  2    COPIES OF -1
+#    0 -1 -2   1  0 -1   2  1  0    SUM
 
+# n: length of S; u: number of distinct values
+# T: O(2^n) - worst case: n distinct values, two choices per group
+# S: O(u), at most O(n) - freq, groups and the call stack
+
+from collections import defaultdict
 
 def count_unique_submultisets(S):
-    values = list(Counter(S).items())   # (number, count) pairs, looked up once
+    freq = defaultdict(int)
+    
+    for elem in S:
+        freq[elem] += 1
+    groups = list(freq.items())
 
-    def visit(idx, cur_sum):
-        if idx == len(values):          # every distinct number decided
-            if cur_sum == 0:
+    def visit(i, sub_sum):
+        if i == len(groups):
+            if sub_sum == 0:
                 return 1
             return 0
-        val, count = values[idx]
+        val, count = groups[i]
         total = 0
-        for k in range(count + 1):      # take k copies of this number
-            total += visit(idx + 1, cur_sum + k * val)
-        return total
 
+        for k in range(count + 1):
+            total += visit(i + 1, sub_sum + k * val)
+        return total
+    
     return visit(0, 0)
 
 

@@ -1,43 +1,51 @@
-# Intuition: for each item make one binary choice - buy it or skip it (0/1 subset selection).
-#   Carry a running spent (price so far) and score (rating sum so far) down each path. At a leaf
-#   (every item decided) compare score against the best seen; if it wins, snapshot picked.copy().
-#   Guard the buy branch with the budget so an over-budget basket is never completed.
-#   Unlike a "collect every node" problem, here we keep only the single max-scoring basket.
-#
-# Rigor checklist (reusable backtracking template):
-#   State:  idx = item being decided; spent = price so far; score = rating so far; picked = indices chosen
-#   Child:  two branches - skip (idx+1, unchanged) or buy (idx+1, spent+price, score+rating)
-#   Prune:  spent + prices[idx] > budget -> don't take the buy branch
-#   Leaf:   idx == n -> all decided; if score > best, snapshot picked.copy()
-#   Work:   O(1) per node, O(n) to copy picked at a winning leaf
-#
-# n: number of items; up to 2^n baskets (n <= 15 -> <= 32768)
-# T: O(n * 2^n) — 2^n leaves, plus an O(n) copy at each improving leaf
-# S: O(n) recursion depth + O(n) best basket
+# budget = 20
+# 0  1 2  3 4       INDEX
+# 10 5 15 8 3       PRICES
+# 7  3 9  6 2       RATINGS
+
+# i = 5
+# buy = [4]
+# spent = 3
+# score = 2
+# best_buy = [4]
+# best_score = 2
+
+# maximizing the sum of style ratings of the items we buy
+# don't want to pick more than one of each item
+
+# Return an array with the indices of the items that we should buy.
+
+
+# Each item: skip, or buy if it fits (append -> recurse -> pop)
+# At i == n: copy buy if score improves; return best_buy
+
+# n: number of items
+# T: O(n * 2^n) - up to 2^n baskets, O(n) to copy each improving basket
+# S: O(n) - call stack, buy and best_buy each hold at most O(n)
 
 def ikea_shopping(budget, prices, ratings):
-    n = len(prices)
-    picked = []            
-    best_score = -1       
-    best_picked = []  
+    buy = []
+    best_buy = []
+    best_score = 0
 
-    def visit(idx, spent, score):   # spent, score flow down each path
-        nonlocal best_score, best_picked
-        if idx == n:   # every item decided
+    def visit(i, spent, score):
+        nonlocal best_buy, best_score
+
+        if i == len(prices):
             if score > best_score:
                 best_score = score
-                best_picked = picked.copy()
+                best_buy = buy.copy()
             return
-        # Branch 1: skip item idx
-        visit(idx + 1, spent, score)
-        # Branch 2: buy item idx (only if it fits)
-        if spent + prices[idx] <= budget:
-            picked.append(idx)
-            visit(idx + 1, spent + prices[idx], score + ratings[idx])
-            picked.pop()
 
-    visit(0, 0, 0.0)
-    return best_picked
+        visit(i + 1, spent, score)
+
+        if spent + prices[i] <= budget:
+            buy.append(i)
+            visit(i + 1, spent + prices[i], score + ratings[i])
+            buy.pop()
+
+    visit(0, 0, 0)
+    return best_buy
 
 
 # # IKEA Shopping
