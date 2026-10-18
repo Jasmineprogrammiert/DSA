@@ -1,34 +1,35 @@
-# DS: two pointers (cur1, cur2) tracking position in each list
-# Steps:
-#   1. save next1 and next2 before rewiring
-#   2. cur1.next = cur2, cur2.next = next1 (if exists)
-#   3. advance both pointers to saved nexts
-#   4. repeat until one list runs out
-# Edge: null head → return the other
-# 
-# n: number of nodes in list1
-# m: number of nodes in list2
-# T: O(min(n,m)) — stops when the shorter list runs out
-# S: O(1) — rewires existing nodes in place
+#           0    1    2                   IDX
 
-def merge(head1, head2):
+#           1 -> 3 -> 5 -> None           HEAD1
+#                     c1   nxt1
+#           2 -> 4 -> 6 -> None           HEAD2
+#                     c2   nxt2
+
+#           1 -> 2 -> 3 -> 4 -> 5 -> 6 -> None
+#                                    HERE
+
+# Merge them IN PLACE by alternating one node from each, starting with `head1`
+# Append any remaining elements to the end
+# Return the new head
+
+# m, n: number of nodes in the two lists
+# T: O(min(m, n)) - interleave until one list ends; leftovers stay linked
+# S: O(1) - rewire existing nodes using a fixed number of pointers
+
+def linked_list_zip(head1, head2):
     if not head1 or not head2:
         return head1 or head2
 
-    cur1 = head1
-    cur2 = head2
+    c1 = head1
+    c2 = head2
 
-    while cur1 and cur2:
-        next1 = cur1.next
-        next2 = cur2.next
-
-        cur1.next = cur2
-        if next1:
-            cur2.next = next1
-        cur1 = next1
-        cur2 = next2
+    while c1 and c2:
+        nxt1, nxt2 = c1.next, c2.next
+        c1.next = c2
+        if nxt1:
+            c2.next = nxt1
+        c1, c2 = nxt1, nxt2
     return head1
-
 
 
 # # Linked-List Zip

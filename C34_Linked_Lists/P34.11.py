@@ -1,39 +1,33 @@
+#      D    0    1    2    3    4         IDX
+#      0 -> 1 -> 2 -> 3 -> 4 -> null      ORG
+#                S              F
+
+# k = 2
+
+# n: number of nodes
+# T: O(n) - advance fast k steps, then move both pointers to the end
+# S: O(1) - one dummy node and a fixed number of pointers
+
 class Node:
     def __init__(self, val):
         self.val = val
         self.next = None
 
-# DS: slow/fast pointers with dummy node
-# Steps:
-#   1. dummy before head — so removing head isn't a special case
-#   2. advance fast k steps to open a gap
-#   3. move both until fast reaches end → slow is at prev of target
-#   4. slow.next = slow.next.next (skip the target)
-# Edge: removing head → dummy handles it
-# 
-# n: number of nodes
-# T: O(n) — single pass through the list
-# S: O(1) — only pointer variables
-
 def remove_kth_node(head, k):
     dummy = Node(0)
     dummy.next = head
-    
-    fast = dummy.next
+    slow, fast = dummy, head
     for _ in range(k):
         fast = fast.next
     
-    slow = dummy
     while fast:
         slow = slow.next
         fast = fast.next
-    
     slow.next = slow.next.next
-    
+
     return dummy.next
 
-
-
+    
 # # Remove Kth Node From The End
 
 # Given the head of a singly linked list, `head`, and a number `k`, remove the `k`-th node **from the end** of the list. Assume `k` is smaller than or equal to the list's size.

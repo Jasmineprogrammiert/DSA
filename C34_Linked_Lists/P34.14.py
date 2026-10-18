@@ -1,67 +1,65 @@
+# k = 2
+#           D    0    1    2    3                  IDX
+#           0 -> 2 -> 1 -> 3 -> 4 -> null          ORG
+#                     HEAD                         GIVEN
+#                     prev
+#                          curr
+#                          check
+#                tail
+
+#                2 -> 1 -> 4 -> 3 -> null                  OUTPUT
+
+# REVERSED       REMAINING
+# None           1 -> 2 -> None
+# p              c    nxt
+
+# 1 -> None      2 -> None
+# p              c
+
+# 2 -> 1 -> None
+# p              c = None
+
 class Node:
     def __init__(self, val):
         self.val = val
         self.next = None
 
-# Reverse every k-length block in-place; skip last block if < k nodes
-# DS: Dummy node + prev pointer (same as "Dummy, Walk, Break, Flip, Reattach")
-# Steps:
-#   1. Probe: walk k steps from curr — if we hit None, return (block too short)
-#   2. Save: tail = walk k-1 from curr, after = tail.next
-#   3. Break: prev.next = None, tail.next = None
-#   4. Flip: reverse(curr) → new_head
-#   5. Reattach: prev.next = new_head, curr.next = after
-#   6. Advance: prev = curr, curr = after — repeat
-# Edge cases: k = 1 (no change), k > list length (no change), exact multiple of k.
-#
 # n: number of nodes
-# T: O(n) — each node visited at most twice (probe + reverse)
-# S: O(1) — only pointer rewiring, no extra storage
-        
+# T: O(n) - each node is checked, located and reversed a constant number of times
+# S: O(1) - rewire existing nodes using a fixed number of pointers and one dummy node
+
 def block_reversal(head, k):
     dummy = Node(0)
     dummy.next = head
     prev = dummy
     curr = head
-    
+
     while curr:
-        # Step 1: Check if k nodes remain
         check = curr
         for _ in range(k):
-            if not check:
+            if check is None:
                 return dummy.next
             check = check.next
-        
-        # Step 2: Reverse k-length block
-        # Save pointers
+
         tail = curr
         for _ in range(k - 1):
             tail = tail.next
-        after = tail.next
-        
-        # Break  
-        prev.next = None
-        tail.next = None
-        
-        # Flip (save, flip, advance)
-        p = None
-        c = curr
+
+        prev.next = tail.next = None
+
+        p, c = None, curr
         while c:
             nxt = c.next
             c.next = p
             p = c
             c = nxt
-        
-        # Reattach
-        prev.next = p
-        curr.next = after   
-        
-        # Advance for next block
-        prev = curr
-        curr = after
-        
-    return dummy.next
 
+        prev.next = p
+        curr.next = check
+
+        prev = curr
+        curr = check
+    return dummy.next
 
 
 # # Linked-List Block Reversal

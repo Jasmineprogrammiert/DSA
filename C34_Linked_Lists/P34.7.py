@@ -1,92 +1,69 @@
-# Sublist Reversal — two methods
-#
-# Setup (both methods):
-#   1. dummy -> head
-#   2. Walk prev to node right before curr
-#   3. If prev falls off the list, return early
-#
-# Method A: "Dummy, Walk, Break, Flip, Reattach"
-#   4. curr = first node to reverse, tail = last node to reverse
-#      after = tail.next
-#   5. Break: prev.next = None, tail.next = None
-#   6. Flip: reverse(curr) using "Save, Flip, Advance" → new_head
-#   7. Reattach: prev.next = new_head, curr.next = after
-#
-# Method B: "Pluck and Insert" (in-place, more concise)
-#   4. Loop (r - l) times: take node after curr, stick it after prev
-#      - curr.next = next_node.next     (skip over)
-#      - next_node.next = prev.next     (point to front)
-#      - prev.next = next_node          (attach after prev)
-#   Note: prev and curr NEVER move. Only next_node changes.
-# 
-# n: r - l (length of the sublist to reverse)
-# T: O(n) - every node in the sublist visited once
-# S: O(1) - reversed in-place using a fixed number of pointers
+# n: number of nodes in the list
+# T: O(n) - walk to the section, find its end, then reverse it
+# S: O(1) - rewire nodes in place; use a fixed number of pointers
+
+
+# `0 ≤ left < right`, head
+# reverse all nodes between the two indices in place
+# return the new head of the list.
+
+# If `left` is beyond the last index, do not modify the list
+# If only `right` is beyond the last index, reverse everything up to the last node
+
+#       0    1    2    3    4               IDX
+#       1 -> 2 -> 3 -> 4 -> 5 -> null       LINKED LIST
+#      head  L         R                    GIVEN COND
+#      prev
+#           curr
+#                     tail
+#                          aft
+
+#            2 -> 3 -> 4            DETACHED
+#            4 -> 3 -> 2 -> None    REVERSED
+# p = 4
+# c = None
+# nxt = None
+
+#       1 -> 4 -> 3 -> 2 -> 5 -> null       OUTPUT
 
 class Node:
     def __init__(self, val):
         self.val = val
         self.next = None
 
-# --- Method A: Break, Flip, Reattach ---
-def sublist_reversal_a(head, l, r):
+def sublist_reversal(head, left, right):
     dummy = Node(0)
     dummy.next = head
     prev = dummy
-
-    for i in range(l):
+    
+    for _ in range(left):
         if not prev.next:
             return dummy.next
         prev = prev.next
-
-    # Break
+    
     curr = prev.next
+    if curr is None:
+        return dummy.next
     tail = curr
-    for i in range(r - l):
+
+    for _ in range(right - left):
         if not tail.next:
             break
         tail = tail.next
-    after = tail.next
-    prev.next = None
-    tail.next = None
-
-    # Flip (Save, Flip, Advance)
-    p = None
-    c = curr
+    aft = tail.next
+    prev.next = tail.next = None
+    
+    p, c = None, curr
     while c:
         nxt = c.next
         c.next = p
         p = c
         c = nxt
-
-    # Reattach
+    
     prev.next = p
-    curr.next = after
-
+    curr.next = aft
+    
     return dummy.next
-
-# --- Method B: Pluck and Insert (in-place) ---
-def sublist_reversal_b(head, l, r):
-    dummy = Node(0)
-    dummy.next = head
-    prev = dummy
-
-    for i in range(l):
-        if not prev.next:
-            return dummy.next
-        prev = prev.next
-    curr = prev.next
-
-    for i in range(r - l):
-        if not curr.next:
-            break
-        next_node = curr.next
-        curr.next = next_node.next
-        next_node.next = prev.next
-        prev.next = next_node
-
-    return dummy.next
-
 
 
 # # Sublist Reversal
