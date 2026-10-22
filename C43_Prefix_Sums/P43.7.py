@@ -1,38 +1,31 @@
-# # Pattern — Prefix Sum + Hashmap, LONGEST variant (see P43.6)
-#
-# Same identity as P43.6:  sum(l..r) = k  <=>  prefix[l-1] = prefix[r] - k
-# New question per hit: not HOW MANY earlier prefixes match, but HOW FAR back
-#   -> first = {prefix_value: earliest index}, a WHERE map instead of a tally
-#   -> hit at i has length i - first[running - k]; keep the max
-#
-# Three knobs, all forced by "longest":
-#   seed {0: -1}        -> empty prefix sits one slot before index 0 (0-based),
-#                          so a whole-prefix hit at i = i - (-1) = i + 1, no special case
-#   never overwrite     -> smallest stored index maximizes i - index; later dupes can't win
-#   lookup, THEN record -> k = 0 would otherwise self-match as a length-0 subarray
-#
-# first = {0: -1}
-# running = 0; best = -1
-# for i, x in enumerate(arr):
-#     running += x
-#     if (running - k) in first:  ...   -> best = max(best, i - first[running - k])
-#     ...                               -> record i for running only if unseen
-#
-# n: length of arr
-# T: O(n) — one sweep, O(1) dict lookup/insert per element
-# S: O(n) — first holds up to n + 1 distinct prefix values
+# 0 1 2 3 4     IDX
+# 1 2 3 2 1     ARR
+# 1 3 6 8 9     RUNNING
+#     i
 
-def longest_subarray_with_sum_k(arr, k):
-    first = {0: -1}
+# remove = running - k = 3
+# sum_idx = {0: -1, 1: 0, 3: 1 ...}
+# longest = 2
+
+# return the length of the longest subarray in `arr` with sum `k`, or `-1` if there is no such subarray.
+
+# n: length of arr
+# T: O(n) average - one pass, O(1) average dictionary lookup/insert per element
+# S: O(n) - the dictionary stores at most n + 1 distinct prefix sums
+
+def longest_subarray_sum_k(arr, k):
+    longest = -1
     running = 0
-    best = -1
-    for i, x in enumerate(arr):
-        running += x
-        if running - k in first:
-            best = max(best, i - first[running - k])
-        if running not in first:  # keep earliest index -> longest span later
-            first[running] = i
-    return best
+    sum_idx = {0: -1}
+
+    for idx, elem in enumerate(arr):
+        running += elem
+        remove = running - k
+        if remove in sum_idx:
+            longest = max(longest, idx - sum_idx[remove])
+        if running not in sum_idx:
+            sum_idx[running] = idx
+    return longest
 
 
 # # Longest Subarray With Sum K

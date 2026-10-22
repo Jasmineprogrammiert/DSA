@@ -1,23 +1,28 @@
-# # Pattern — Left/Right Split via Running Total
-# Use when you compare sum-of-left vs sum-of-right around each index i.
-# Key identity (right is derived, not tracked):
-#   right(i) = total - left(i) - arr[i]        total = sum(arr); pivot joins neither side
-# Sweep once, keeping left as a running prefix; test the balance condition.
-#   -> left starts at 0; add arr[i] to left AFTER testing index i.
-#
-# n: length of arr
-# T: O(n) — one pass for sum(arr), one sweep with O(1) work per index
-# S: O(1) extra — just total and left; right is derived, never stored
+# 0  1  2  3  4  5  6        IDX
+# 3  5 -2  7  2  2  2        ARR
+# 0  3  8  6                 L
+#          i
 
-def balance_index(arr):
+# i = 3
+# r = total - l - arr[i] = 19 - 6 - 7 = 6
+# total = 19
+
+# return the first _balanced index_, if there is any, or `-1` otherwise
+# the sum of the elements to its left is the same as the sum of the elements to its right
+
+# n: length of arr
+# T: O(n) - one pass for the total, then one pass to find the balance point
+# S: O(1) - a fixed number of variables
+
+def balance_point(arr):
     total = sum(arr)
-    left = 0
+    l = 0
 
     for i in range(len(arr)):
-        right = total - left - arr[i]
-        if left == right:
+        r = total - l - arr[i]
+        if l == r:
             return i
-        left += arr[i]
+        l += arr[i]
     return -1
 
 

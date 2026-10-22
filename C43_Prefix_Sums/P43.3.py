@@ -1,58 +1,26 @@
-# # Pattern — Prefix x Suffix (when the combine can't be undone)
-#
-# Trigger:
-#     "combine of everything EXCEPT i", but the op has no inverse
-#     (product under mod: division banned) -> can't total-then-remove.
-#
-# vs chapter template:
-#     same running-accumulation fill, but EXCLUSIVE flavor (identity seed,
-#     shifted one right) and TWO arrays — one array + subtract only works
-#     when the op can be undone.
-#
-# Derive from the grid (one row per answer, ✗ = the banned element):
-#     ans[0] =  ✗ · 3 · 2 · 1  = 6        arr = [1, 3, 2, 1]
-#     ans[1] =  1 · ✗ · 2 · 1  = 2
-#     ans[2] =  1 · 3 · ✗ · 1  = 3
-#     ans[3] =  1 · 3 · 2 · ✗  = 6
-#
-#     ✗ walks the diagonal -> every row = left block x right block:
-#         l_prod[i] = left-block column  = product BEFORE i
-#         r_prod[i] = right-block column = product AFTER  i
-#         ans[i]    = l_prod[i] * r_prod[i] % MOD   -> arr[i] in neither side
-#
-# Fill (adjacent rows differ by ONE element crossing the ✗ -> one multiply each):
-#     l_prod[i] = l_prod[i-1] * arr[i-1] % MOD
-#         -> reads LEFT  -> fill L-to-R: range(1, n)
-#     r_prod[i] = r_prod[i+1] * arr[i+1] % MOD
-#         -> reads RIGHT -> fill R-to-L: range(n-2, -1, -1)
-#
-# Seed [1]*n:
-#     the empty blocks (row 0's left, row n-1's right) ARE 1 — the freebie
-#     ends. Start one row inside the freebie; stop one past the far end
-#     (the -1 in range(n-2, -1, -1)).
-#
-# Take % after every multiply, never divide.
-#
-# Vocab — each operation's RESULT has a name: + sum, - difference, x product, / quotient
-#
+# 0 1 2 3       IDX
+# 1 3 2 1       ARR
+
+# 1 1 3 6       L PROD
+# 6 2 1 1       R PROD
+# 6 2 3 6       RES
+
 # n: length of arr
-# T: O(n) — three sweeps (build pre, build suf, combine), O(1) work per index
-# S: O(n) — the l_prod and r_prod arrays; right side can roll in one var for O(1) extra
+# T: O(n) - three linear passes: left products, right products, then results
+# S: O(n) - two product arrays and the result each hold n entries; auxiliary space is O(n)
 
 def exclusive_prod(arr):
     MOD = 10**9 + 7
     n = len(arr)
-    
-    l_prod = [1] * n
-    for i in range(1, n):
-        l_prod[i] = l_prod[i-1] * arr[i-1] % MOD
 
-    r_prod = [1] * n
-    for i in range(n-2, -1, -1): # range(start, stop, step)
-        r_prod[i] = r_prod[i+1] * arr[i+1] % MOD
+    l_prod, r_prod = [1] * n, [1] * n
+    for i in range(1, n):
+        l_prod[i] = l_prod[i - 1] * arr[i - 1] % MOD
+    for i in range(n - 2, -1, -1):
+        r_prod[i] = r_prod[i + 1] * arr[i + 1] % MOD
 
     return [l_prod[i] * r_prod[i] % MOD for i in range(n)]
-        
+
 
 # # Exclusive Product
 

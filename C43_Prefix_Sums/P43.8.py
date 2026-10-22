@@ -1,49 +1,34 @@
-# # Pattern — Difference Array (many range updates, read at the end)   [NEW]
-#
-# Trigger: many "add v to every [l, r]" updates, answer needed only at the end
-#     -> naive rewrites the whole range each time = O(n * updates) -> TLE
-#
-# Idea: running never resets, so ONE write spreads rightward forever.
-# Post each update twice: the vote at l, its canceller at r+1.
-#
-#     e.g. [l=1, r=3, +v] on n=6:      minute:  0   1   2   3   4   5
-#     diff[l]   += v   ->  on forever           .  +v  +v  +v  +v  +v
-#     diff[r+1] -= v   ->  off forever          .   .   .   .  -v  -v
-#                                              ------------------------
-#     net after sweep                           .  +v  +v  +v   .   .   = [l, r]
-#
-# Sweep: running IS the live answer — the net count at the minute you stand on.
-#     Neighbor minutes differ only by what starts/stops at the boundary, and
-#     diff[i] is exactly that change:
-#         count(i) = count(i-1) + diff[i]   ->   running += diff[i]; out[i] = running
-#
-# Gotchas:
-#     - both notes sit on the FIRST minute of their new state (in: l, out: r+1)
-#     - size diff n+1 so a range ending at n-1 has a cell for its canceller
-#
-# diff = [0] * (n + 1)
-# for l, r, v in votes:
-#     ...                 -> +v at l, -v at r+1
-# out = [0] * n; running = 0
-# for i in range(n):
-#     ...                 -> running += diff[i]; out[i] = running
-#
-# n: length of the video in minutes
-# u: number of votes
-# T: O(n + u) — 2 writes per vote, then one sweep; range width never matters
-# S: O(n) — the diff array (n + 1 cells) and the output
+# n = 6
+# votes = [
+#   [3, 4, 1],
+#   [0, 0, 1],
+#   [1, 3, 1],
+#   [0, 5, -1]
+# ]
 
-def net_votes(n, votes):
+# IDX       0  1  2  3  4  5  6
+# DIFF      0  0  0  1 -1 -1  1
+# RES       0  0  0  1  0 -1
+#                         i
+# running = -1
+
+# n: video length in minutes
+# m: number of votes
+# T: O(n + m) - record two changes per vote, then build the result in one pass
+# S: O(n) - diff holds n + 1 entries and res holds n; auxiliary space is also O(n)
+
+def seg_video_votes(n, votes):
     diff = [0] * (n + 1)
     for l, r, v in votes:
-        diff[l] += v  # +v forever from l (the sweep's carry spreads it)
-        diff[r + 1] -= v  # canceller: -v forever from r+1 -> net +v on [l, r]
-    out = [0] * n
+        diff[l] += v
+        diff[r + 1] -= v
+
+    res = [0] * n
     running = 0
     for i in range(n):
-        running += diff[i]  # apply this minute's change -> count at i
-        out[i] = running
-    return out
+        running += diff[i]
+        res[i] = running
+    return res
 
 
 # # Segmented Video Votes
