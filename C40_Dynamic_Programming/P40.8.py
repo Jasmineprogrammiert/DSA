@@ -1,67 +1,62 @@
-# === Approach 1: solution reconstruction — length DP + backtrack (optimal) ===
-# m: len(s1)
-# n: len(s2)
-# Subproblems: m*n — one per (i, j)
-# Non-recursive work: O(1) — memo stores an int (LCS length), not a string
-# T: O(m*n) — m*n subproblems * O(1); reconstruction walk O(m+n), dominated
-# S: O(m*n) — memo up to m*n int entries (result string O(min(m,n)), dominated)
+# subsequence: in the same relative order (not necessarily consecutively)
+# return:
+#       tie: any common subsequence of maximum length
+#       the longest common subsequence
 
-def lcs(s1, s2):
-    memo = {}
 
-    def lcs_rec(i, j):
-        if i == len(s1) or j == len(s2):
-            return 0
-        if (i, j) in memo:
-            return memo[(i, j)]
-        if s1[i] == s2[j]:
-            memo[(i, j)] = 1 + lcs_rec(i + 1, j + 1)
-        else:
-            memo[(i, j)] = max(lcs_rec(i + 1, j), lcs_rec(i, j + 1))
-        return memo[(i, j)]
+# dp[i][j]: LCS length of s1[i:] and s2[j:]
+# match: 1 + diagonal; otherwise: max(below, right)
 
-    i, j = 0, 0
+
+# IDX       0 1 2 3 4 5 6
+# s1        H A H A H 
+#                     i
+# s2        A A A A H H
+#                     j
+
+# dp[i][j]: best matching length from i and j onward
+#                s2 →
+#                A A A A H H empty
+#                0 1 2 3 4 5 6       j
+# s1       i
+# H        0     3 3 3 2 2 1 0
+# A        1     3 3 3 2 2 1 0
+# H        2     2 2 2 2 2 1 0
+# A        3     2 2 2 2 1 1 0
+# H        4     1 1 1 1 1 1 0
+# empty    5     0 0 0 0 0 0 0
+
+# res = AAH
+
+
+# m: length of s1, n: length of s2
+# T: O(m * n) - fill the table; reconstruction takes O(m + n)
+# S: O(m * n) - the dp table; res holds at most min(m, n) letters
+# These bounds assume both strings are non-empty.
+
+def reconstruct_lcs(s1, s2):
+    m, n = len(s1), len(s2)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+
+    for i in range(m - 1, -1, -1):
+        for j in range(n - 1, -1, -1):
+            if s1[i] == s2[j]:
+                dp[i][j] = 1 + dp[i + 1][j + 1]
+            else:
+                dp[i][j] = max(dp[i + 1][j], dp[i][j + 1])
+
+    i = j = 0
     res = []
-    while i < len(s1) and j < len(s2):
+    while i < m and j < n:
         if s1[i] == s2[j]:
             res.append(s1[i])
             i += 1
             j += 1
-        elif lcs_rec(i + 1, j) >= lcs_rec(i, j + 1):
+        elif dp[i + 1][j] >= dp[i][j + 1]:
             i += 1
         else:
             j += 1
     return ''.join(res)
-
-
-# === Approach 2: carry the LCS string in the memo (heavier) ===
-# Same recurrence as Approach 1, but stores the LCS STRING instead of its length:
-#   base -> ""  |  match -> s1[i] + child  |  mismatch -> longer of the two skips (key=len)
-# No backtrack needed (answer is already built), but strings cost O(k) to copy/store.
-#
-# m: len(s1)
-# n: len(s2)
-# k = min(m, n): max LCS length -> cost to build/store one result string
-# Subproblems: m*n — one per (i, j)
-# Non-recursive work: O(k) — match concatenates a string up to k long (O(k) copy); mismatch's max is O(1)
-# T: O(m*n*k) — m*n subproblems * O(k) work
-# S: O(m*n*k) — memo up to m*n entries, each a string up to k long (recursion stack O(m+n), dominated)
-
-def lcs(s1, s2):
-    memo = {}
-
-    def lcs_rec(i, j):
-        if i == len(s1) or j == len(s2):
-            return ""
-        if (i, j) in memo:
-            return memo[(i, j)]
-        if s1[i] == s2[j]:
-            memo[(i, j)] = s1[i] + lcs_rec(i + 1, j + 1)
-        else:
-            memo[(i, j)] = max(lcs_rec(i + 1, j), lcs_rec(i, j + 1), key=len)
-        return memo[(i, j)]
-
-    return lcs_rec(0, 0)
 
 
 # # Reconstruct Longest Common Subsequence
