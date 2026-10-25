@@ -6,3 +6,5 @@ https://docs.google.com/document/d/1BW6ikFLTJUxuSooS5wN4fgRNQSJcdHKkliynKrTy4TQ/
 
 # Bug List
 https://docs.google.com/document/d/1PiPmYiKAcplG1BraGK0-ufdHzc5IACmeEAdAZuZZAxU/edit?usp=sharing
+
+[DSA quick reference](docs/dsa.pdf)
