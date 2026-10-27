@@ -1,48 +1,48 @@
-# Greedy: everyone prefers whichever center is nearer, but exactly half must
-# go to each -- so rank points by how much they lean toward C2 vs C1.
-#   -> forward lean = d2 - d1: how much closer a point is to C1 than to C2
-#      negative -> nearer C2, so it leans toward (prefers) C2
-#      positive -> nearer C1, so it leans toward (prefers) C1
-#   -> sort by forward lean ascending: strongest C2-preferrers first, C1-preferrers last
-#   -> send the front half to C2, keep the back half at C1
-#   -> cutting the sorted list in half gives the equal sizes for free
-#
+# Assign half the points to each center; return the minimum total Euclidean distance.
+
+# 1. Start with all points at center1.
+# 2. Sort by switching cost: d2 - d1.
+# 3. Move the half with the lowest switching costs to center2.
+
 # n: number of points
-# T: O(n log n) — sort dominates
-# S: O(n) — the scored list
+# T: O(n log n) - sorting dominates calculating distances and summing the total
+# S: O(n) - ordered stores n points
+
+
+# points = [[0, 1], [1, 0], [-1, 0], [0, -1]]
+# center1 = [0, 0]
+# center2 = [1, 1]
+
+# Output: 4
+# We can assign [-1, 0] and [0, -1] to center1 and [0, 1] and [1, 0] to center2.
+
+# Point      d1       d2       d2-d1    Assign
+# [0, 1]      1        1         0       c2
+# [1, 0]      1        1         0       c2
+# [-1, 0]     1     sqrt(5)      >0       c1
+# [0, -1]     1     sqrt(5)      >0       c1
+#
+# total = 1 + 1 + 1 + 1 = 4
 
 import math
 
 
-def minimize_center_distance(points, c1, c2):
+def center_assignment(points, c1, c2):
     def dist(p, c):
-        # math.hypot(dx, dy) = sqrt(dx^2 + dy^2), the straight-line distance
-        return math.hypot(p[0] - c[0], p[1] - c[1])
+        horizontal_gap = p[0] - c[0]
+        vertical_gap = p[1] - c[1]
+        return math.sqrt(horizontal_gap ** 2 + vertical_gap ** 2)
 
-    scored = []
-    for p in points:
-        d1, d2 = dist(p, c1), dist(p, c2)
-        scored.append((d2 - d1, d1, d2))  # one tuple: (lean, dist to C1, dist to C2)
-    scored.sort()
+    ordered = sorted(points, key=lambda p: dist(p, c2) - dist(p, c1))
 
     total = 0
     half = len(points) // 2
-    for i, (_, d1, d2) in enumerate(scored):
+    for i, p in enumerate(ordered):
         if i < half:
-            total += d2   # most C2-leaning half -> C2
+            total += dist(p, c2)
         else:
-            total += d1   # the rest stay at C1
+            total += dist(p, c1)
     return total
-
-
-# Alt approach: assign each point to its nearer center for a baseline, then rebalance.
-#   -> one side may be overloaded (more than half the points)
-#   -> move the cheapest-to-switch points from the overloaded side
-#      until both halves are equal
-#   -> same O(n log n), more branches
-#
-# T: O(n log n) — sort the overloaded side's switch costs
-# S: O(n) — the switch-cost list
 
 
 # # Center Assignment
