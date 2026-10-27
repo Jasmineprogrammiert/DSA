@@ -1,23 +1,33 @@
-# Greedy: to fit the most intervals, always keep the one that frees up
-# the timeline earliest -> the smallest right endpoint.
-#   -> sort by right endpoint r
-#   -> scan left to right, greedily take an interval when it starts
-#      after the last taken one ended (l > prev_end)
-#   -> taking the earliest-ending interval never rules out a choice a
-#      later-ending one would have allowed -> safe exchange argument
-# 
+# a pair of integers `[l, r]`, with `l ≤ r`, representing an interval (with both endpoints included)
+#  Return the largest number of non-overlapping intervals.
+
+# intervals = [[2, 3], [1, 4], [2, 3], [3, 6], [8, 9]]
+# Output: 2
+
+ 
+#  IDX          0 1 2 3 4 5 6 7 8 9
+#                   i i 
+#                 i i i i
+#                     i i i i
+#                               i i
+
+# count         2
+# end           9
+# intervals     [[2, 3], [1, 4], [3, 6], [8, 9]]
+
+
 # n: number of intervals
-# T: O(n log n) — sort dominates, single linear pass after
-# S: O(n) — Python's sort needs extra space; only scalars beyond that
+# T: O(n log n) - sorting dominates the O(n) scan
+# S: O(n) - Python sorting workspace; the scan uses O(1) extra space
 
 def most_non_overlapping_intervals(intervals):
     intervals.sort(key=lambda x: x[1])
+    end = float('-inf')
     count = 0
-    prev_end = float("-inf")
     for l, r in intervals:
-        if l > prev_end:
+        if l > end:
             count += 1
-            prev_end = r
+            end = r
     return count
 
 

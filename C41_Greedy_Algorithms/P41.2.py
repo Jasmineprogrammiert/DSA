@@ -1,20 +1,29 @@
-# Greedy: each jump cancels one gap's aging, so spend jumps on the
-# biggest gaps -> the most aging removed per jump.
-#   -> build the n-1 gaps between adjacent points
-#   -> sort gaps, drop the k largest (jump them), age through the rest
-#   -> reachable if the leftover aging fits the budget (<= max_aging)
-#
+# jumping_points = [2020, 2024]     can only jump to these years
+# k = 0                           a limited number of jumps
+# max_aging = 3                   avoid aging more than a certain limit
+
+
+# 0     1     2     3     4     5     6     7     8     9       IDX
+# 1803  1861  1863  1865  1920  1929  1941  1964  2001  2021    YEARS
+# k = 4
+# max_aging = 45
+
+
+# Starting point        the first year in `jumping_points`
+# Goal                  reach the last year in the list
+# Return                whether can reach the final jumping point within `max_aging`
+
+# Skip the k largest gaps; sum the remaining gaps to get total aging
+
 # n: number of jumping points
-# T: O(n log n) — sort dominates, single linear pass after
-# S: O(n) — the gaps list; Python's sort needs extra space too
+# T: O(n log n) - sorting dominates building and summing the gaps
+# S: O(n) - gaps, sorting workspace and the slice each use O(n) space
 
 def time_traveler(jumping_points, k, max_aging):
     gaps = []
-    for i in range(1, len(jumping_points)):  # start at 1: gap needs a previous point
+    for i in range(1, len(jumping_points)):
         gaps.append(jumping_points[i] - jumping_points[i - 1])
     gaps.sort()
-    # use len(gaps) - k, not :-k 
-    #   => when k = 0, gaps[:-0] is gaps[:0] = empty list
     total_aging = sum(gaps[:len(gaps) - k])
     return total_aging <= max_aging
 
