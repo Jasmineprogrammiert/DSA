@@ -1,58 +1,51 @@
-# Model: each letter is a node; each adjacent pair a -> b is an ordering
-# constraint (a must appear before b)
-#
-# Key insight: a single no-repeat supersequence exists iff these constraints
-# admit a total order — i.e. the constraint graph is a DAG. So build the graph
-# and topo-sort; a cycle (e.g. "ab" + "ba") means no valid ordering exists
-#
-# Notes:
-#   - store neighbors in a set so parallel edges dedupe automatically
-#     (repeats can't inflate in-degrees)
-#   - factor the cycle check out as a reusable has_cycle
-# 
-# N: total chars across all strings
-# T: O(N) — scan every char to build the graph; the ≤26-node graph makes the sort O(1)
-# S: O(1) — sets dedupe edges, so the graph holds ≤26 nodes (O(N) if you keep raw pairs)
-#
-# P.S. "iff" above is math shorthand for "if and only if" (both directions), not a typo
+# Each adjacent pair gives a before -> after edge.
+# Process zero-indegree letters with Kahn's algorithm.
+# A valid supersequence exists if every letter is processed.
+
+# Example 2: ["ab", "ba"] -> a -> b -> a
+# GRAPH       {"a": {"b"}, "b": {"a"}}
+# INDEGREE    {"a": 1, "b": 1}
+# READY       deque([])
+# PROCESSED   0 of 2 -> False
+
+# N: total characters, W: number of words
+# T: O(W + N) - scan the words and their adjacent pairs.
+# S: O(1) - at most 26 letters, with bounded edges and word slices.
 
 from collections import deque
 
-
-def has_cycle(graph):
-    # Kahn's peel-off: a graph is a DAG iff every node can be peeled
-    in_degrees = {node: 0 for node in graph}
-    for node in graph:
-        for nbr in graph[node]:
-            in_degrees[nbr] += 1
-
-    degree_zero = deque(node for node in graph if in_degrees[node] == 0)
-
-    peeled = 0
-    while degree_zero:
-        node = degree_zero.popleft()
-        peeled += 1
-        for nbr in graph[node]:
-            in_degrees[nbr] -= 1
-            if in_degrees[nbr] == 0:
-                degree_zero.append(nbr)
-
-    return peeled != len(graph)  # unpeeled nodes => a cycle remains
-
 def can_form_supersequence(arr):
-    # Build the constraint graph: every letter a node, each consecutive pair
-    # prev -> curr an edge. Neighbor sets dedupe parallel edges automatically
     graph = {}
     for word in arr:
         for char in word:
-            # setdefault(k, d): return graph[k], or insert k->d first if k is missing
             graph.setdefault(char, set())
-        # zip(word, word[1:]): pair each char with the next -> "abc" gives (a,b),(b,c)
         for prev, curr in zip(word, word[1:]):
             graph[prev].add(curr)
 
-    # A single no-repeat supersequence exists iff the constraints form a DAG.
     return not has_cycle(graph)
+
+
+def has_cycle(graph):
+    indegree = {node: 0 for node in graph}
+    for node in graph:
+        for nbr in graph[node]:
+            indegree[nbr] += 1
+
+    ready = deque()
+    for node in graph:
+        if indegree[node] == 0:
+            ready.append(node)
+
+    processed = 0
+    while ready:
+        node = ready.popleft()
+        processed += 1
+        for nbr in graph[node]:
+            indegree[nbr] -= 1
+            if indegree[nbr] == 0:
+                ready.append(nbr)
+
+    return processed != len(graph)
 
 
 # # Supersequence

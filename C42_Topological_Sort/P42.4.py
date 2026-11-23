@@ -1,45 +1,48 @@
-# Transferable lesson so far — same skeleton, the update line is the whole
-# personality of the problem:
-#   shortest     ->  if new < old: paths[v] = new
-#   longest      ->  if new > old: paths[v] = new
-#   count paths  ->  paths[v] += paths[u]
-# 
-# E: number of edges    
-# V: number of nodes/vertices
-# T: O(V + E) — topo sort and the counting pass each touch every node/edge once
-# S: O(V) — in_degrees, degree_zero, topo_order, paths are each O(V) (input adjacency list not counted)
+# Given an unweighted DAG and a start node, return the path count to each node.
+# graph = [[1], [], [1], [4], [1, 2, 5], [2]]
+# start = 4 -> [0, 3, 2, 0, 1, 1]
+
+# TOPO ORDER    [0, 3, 4, 5, 2, 1]
+# NODE ID       0 1 2 3 4 5
+# PATHS         0 3 2 0 1 1
+
+# V: number of nodes
+# E: number of directed edges
+# T: O(V + E) - a fixed number of passes over the nodes and edges
+# S: O(V) - indegree, ready, topo_order and paths each hold at most V entries
 
 from collections import deque
 
+def counting_paths(graph, start):
+    def topological_sort(graph):
+        V = len(graph)
+        indegree = [0] * V
+        for node in range(V):
+            for nbr in graph[node]:
+                indegree[nbr] += 1
 
-def topological_sort(graph):
-    V = len(graph)
-    in_degrees = [0] * V
-    for node in range(V):
-        for nbr in graph[node]:
-            in_degrees[nbr] += 1
+        ready = deque()
+        for node in range(V):
+            if indegree[node] == 0:
+                ready.append(node)
 
-    degree_zero = deque(node for node in range(V) if in_degrees[node] == 0)
+        topo_order = []
+        while ready:
+            node = ready.popleft()
+            topo_order.append(node)
+            for nbr in graph[node]:
+                indegree[nbr] -= 1
+                if indegree[nbr] == 0:
+                    ready.append(nbr)
 
-    topo_order = []
-    while degree_zero:
-        node = degree_zero.popleft()
-        topo_order.append(node)
-        for nbr in graph[node]:
-            in_degrees[nbr] -= 1
-            if in_degrees[nbr] == 0:
-                degree_zero.append(nbr)
+        return topo_order
 
-    return topo_order
-
-def path_count(graph, start):
-    V = len(graph)
     topo_order = topological_sort(graph)
-
-    paths = [0] * V
+    paths = [0] * len(graph)
     paths[start] = 1
+
     for node in topo_order:
-        for nbr in graph[node]:  # each path reaching node extends one step to nbr, so nbr gains node's count
+        for nbr in graph[node]:
             paths[nbr] += paths[node]
 
     return paths

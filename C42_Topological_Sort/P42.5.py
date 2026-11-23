@@ -1,57 +1,69 @@
-# A variant of the longest-path problem (P42.3) with 4 tweaks:
-# 1. imports is an adjacency list of INCOMING edges -> build the forward (outgoing) list to run the topo sort
-# 2. start nodes = nodes with no incoming edges (empty imports)
-# 3. weights live on the nodes (seconds), not the edges
-# 4. answer is the max finish time across all nodes
-# 
-# E: number of edges (dependencies)
-# V: number of nodes/vertices (packages, n)
-# T: O(V + E) — building the forward graph, the topo sort, and the finish-time relaxation each touch every node/edge once
-# S: O(V + E) — the O(E) is ENTIRELY the forward `graph` we build from `imports`: one neighbor entry per dependency, so E entries across V lists. Every other structure (in_degrees, degree_zero, topo_order, finish) is a flat O(V) array
+# Example: 0 (10s) and 1 (20s) -> 2 (30s)
+# Package 2 waits for both: max(10, 20) + 30 = 50s.
+
+# Build prereq -> dependent edges.
+# Toposort, then finish = duration + max(prereq finishes, default 0).
+# Return max(finish).
+
+# Example 1 trace
+# PACKAGE      0    1     2
+# SECONDS     10   20    30
+# IMPORTS     []   []    [0, 1]
+# GRAPH       [2]  [2]   []       0 -> 2, 1 -> 2
+#
+# After seeding   INDEGREE [0, 0, 2]   READY deque([0, 1])   TOPO_ORDER []
+# After pop 0     INDEGREE [0, 0, 1]   READY deque([1])      TOPO_ORDER [0]
+# After pop 1     INDEGREE [0, 0, 0]   READY deque([2])      TOPO_ORDER [0, 1]
+# After pop 2     INDEGREE [0, 0, 0]   READY deque([])       TOPO_ORDER [0, 1, 2]
+#
+# FINISH  [10, 20, 30] -> [10, 20, 40] -> [10, 20, 50]
+#                         via 0 -> 2     via 1 -> 2
+
+# V: number of packages
+# E: number of dependencies
+# T: O(V + E) - each pass does constant work per package and dependency.
+# S: O(V + E) - graph stores V lists and E entries. Other structures use O(V).
 
 from collections import deque
+
+def parallel_compilation(seconds, imports):
+    V = len(imports)
+    graph = [[] for _ in range(V)]
+    for pkg in range(V):
+        for dep in imports[pkg]:
+            graph[dep].append(pkg)
+
+    topo_order = topological_sort(graph)
+    finish = seconds.copy()
+    for pkg in topo_order:
+        for nbr in graph[pkg]:
+            finish[nbr] = max(finish[nbr], finish[pkg] + seconds[nbr])
+
+    return max(finish)
 
 
 def topological_sort(graph):
     V = len(graph)
-    in_degrees = [0] * V
+    indegree = [0] * V
     for node in range(V):
         for nbr in graph[node]:
-            in_degrees[nbr] += 1
+            indegree[nbr] += 1
 
-    degree_zero = deque(node for node in range(V) if in_degrees[node] == 0)
+    ready = deque()
+    for node in range(V):
+        if indegree[node] == 0:
+            ready.append(node)
 
     topo_order = []
-    while degree_zero:
-        node = degree_zero.popleft()
+    while ready:
+        node = ready.popleft()
         topo_order.append(node)
         for nbr in graph[node]:
-            in_degrees[nbr] -= 1
-            if in_degrees[nbr] == 0:
-                degree_zero.append(nbr)
+            indegree[nbr] -= 1
+            if indegree[nbr] == 0:
+                ready.append(nbr)
 
-    if len(topo_order) < V:
-        return []
     return topo_order
-
-def min_compile_time(seconds, imports):
-    # Tweak 1: build outgoing graph from incoming 'imports'
-    n = len(seconds)
-    graph = [[] for _ in range(n)]
-    for pkg in range(n):
-        for dep in imports[pkg]:
-            graph[dep].append(pkg)
-
-    # Tweak 2: start nodes = packages with no imports (in-degree 0)
-    topo_order = topological_sort(graph)
-
-    # Tweak 3: weights on nodes — each package starts at its own compile time
-    finish = seconds.copy()
-    for node in topo_order:
-        for nbr in graph[node]:
-            finish[nbr] = max(finish[nbr], finish[node] + seconds[nbr])
-
-    return max(finish)  # Tweak 4: whole program done at the last finish time
 
 
 # # Parallel Compilation
